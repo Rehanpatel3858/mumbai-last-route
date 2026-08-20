@@ -365,7 +365,7 @@ export class MainGameScene extends Phaser.Scene {
     
     if (!this.isPaused) {
       // 1. Flash Camera
-      this.cameras.main.flash(200, 230, 240, 255, 0.6);
+      this.cameras.main.flash(200, 230, 240, 255);
       
       // 2. Play Thunder Sound with short delay
       this.time.delayedCall(Phaser.Math.Between(200, 600), () => {
@@ -555,7 +555,7 @@ export class MainGameScene extends Phaser.Scene {
       this.eventsBridge.onHealthUpdate(this.player.health);
       
       // Screen Flash
-      this.cameras.main.flash(300, 255, 0, 0, 0.4);
+      this.cameras.main.flash(300, 255, 0, 0);
       
       // Player Tint Flash
       this.player.setTint(0xff0000);

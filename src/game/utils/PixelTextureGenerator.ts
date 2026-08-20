@@ -584,7 +584,28 @@ export function generatePixelTextures(scene: Phaser.Scene) {
       // Base dark
       ctx.fillStyle = '#064e3b';
       ctx.fillRect(x, y, w, h);
-    }
+      
+      // Midtones (checkerboard/random scatter)
+      ctx.fillStyle = '#047857';
+      for(let i=0; i<8; i++) {
+        ctx.fillRect(x + Math.random()*(w-4), y + Math.random()*(h-4), 4, 4);
+      }
+      
+      // Highlights (wet leaves)
+      ctx.fillStyle = '#10b981';
+      for(let i=0; i<4; i++) {
+        ctx.fillRect(x + Math.random()*(w-2), y + Math.random()*(h-2), 2, 2);
+      }
+    };
+
+    // Build the canopy out of blocks
+    drawLeafBlock(16, 10, 32, 24); // main center
+    drawLeafBlock(8, 16, 20, 16);  // mid left
+    drawLeafBlock(36, 12, 20, 20); // mid right
+    drawLeafBlock(12, 4, 24, 12);  // top left
+    drawLeafBlock(28, 2, 20, 16);  // top right
+    drawLeafBlock(4, 24, 16, 12);  // far left low
+    drawLeafBlock(44, 20, 16, 12); // far right low
   });
 
   createPixelCanvas('safezone-pixel', 128, 128, (ctx) => {
