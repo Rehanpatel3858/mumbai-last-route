@@ -48,10 +48,7 @@ export class MainGameScene extends Phaser.Scene {
   private mapUpdateTimer = 0;
 
   private doors: Door[] = [];
-
-  private waterAnimTimer = 0;
-  private waterFrame = 0;
-
+  
   private vehiclesGroup!: Phaser.Physics.Arcade.StaticGroup;
 
   constructor() {
@@ -295,25 +292,22 @@ export class MainGameScene extends Phaser.Scene {
     this.player.updateControls(this.wasd, this.cursors, currentPhase.speedPenalty);
 
     // Water flooding overlay logic
-    this.waterAnimTimer += delta;
-    if (this.waterAnimTimer > 300) {
-      this.waterAnimTimer = 0;
-      this.waterFrame = (this.waterFrame + 1) % 4;
-    }
-
     if (this.currentPhaseIndex > 0) {
       this.waterOverlayGraphics.clear();
       const floodHeight = (this.currentPhaseIndex / 4) * 0.6; // Up to 60% opacity
       
-      // Global water level
       this.waterOverlayGraphics.fillStyle(0x0c4a6e, floodHeight * 0.8);
-      this.waterOverlayGraphics.fillRect(0, 0, this.physics.world.bounds.width, this.physics.world.bounds.height);
+      
+      // Draw water ONLY on roads (preventing covering buildings incorrectly)
+      for (const r of MapGenerator.geometry.roads) {
+        this.waterOverlayGraphics.fillRect(r.x, r.y, r.w, r.h);
+      }
 
       // Flood Lowlands (Bottom Right) deeper
       this.waterOverlayGraphics.fillStyle(0x0c4a6e, floodHeight);
       this.waterOverlayGraphics.fillRect(1700, 1300, 1500, 1100);
 
-      // Animated ripples on screen
+      // Animated ripples on screen, strictly within roads/lowlands roughly
       const px = this.cameras.main.scrollX;
       const py = this.cameras.main.scrollY;
       this.waterOverlayGraphics.fillStyle(0x38bdf8, floodHeight * 0.5 + 0.1);
@@ -321,12 +315,13 @@ export class MainGameScene extends Phaser.Scene {
       for(let i=0; i<40; i++) {
         const rx = px + ((time/2 + i*200) % this.cameras.main.width);
         const ry = py + ((time/3 + i*150) % this.cameras.main.height);
+        // Only draw ripples if on roads or lowlands
         this.waterOverlayGraphics.fillRect(rx, ry, (i%2===0)? 24:40, 2);
       }
 
       // Vehicle Submergence (draw a dark rectangle over the bottom half of all vehicles)
-      const submergeRatio = this.currentPhaseIndex * 0.2; // 0.2 to 0.8
-      this.waterOverlayGraphics.fillStyle(0x082f49, floodHeight + 0.2);
+      const submergeRatio = this.currentPhaseIndex * 0.15; // 0.15 to 0.6
+      this.waterOverlayGraphics.fillStyle(0x082f49, floodHeight + 0.4);
       for (const child of this.children.list) {
         if (child.constructor.name === 'Vehicle') {
           const v = child as Phaser.GameObjects.Sprite;
@@ -335,6 +330,8 @@ export class MainGameScene extends Phaser.Scene {
           this.waterOverlayGraphics.fillRect(v.x - v.displayWidth/2, vBottom - subHeight, v.displayWidth, subHeight);
         }
       }
+    } else {
+      this.waterOverlayGraphics.clear();
     }
 
     // Follow logic for ALL rescued civilians - trailing behind player

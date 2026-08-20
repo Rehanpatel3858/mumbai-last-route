@@ -202,16 +202,16 @@ export function generatePixelTextures(scene: Phaser.Scene) {
   createPixelCanvas('road-tile', 64, 64, (ctx) => {
     ctx.fillStyle = '#1e293b'; // dark asphalt
     ctx.fillRect(0, 0, 64, 64);
-    // Cracks / texture
+    // Cracks / texture (NO CIRCLES)
     ctx.fillStyle = '#0f172a';
-    for(let i=0; i<15; i++) {
+    for(let i=0; i<30; i++) {
       ctx.fillRect(Math.random()*64, Math.random()*64, Math.random()*4+2, Math.random()*2+1);
     }
-    // Puddle
+    // Minor lighter pebbles
     ctx.fillStyle = '#334155';
-    ctx.beginPath();
-    ctx.arc(32, 32, 10, 0, Math.PI*2);
-    ctx.fill();
+    for(let i=0; i<15; i++) {
+      ctx.fillRect(Math.random()*64, Math.random()*64, 2, 2);
+    }
   });
 
   createPixelCanvas('road-line-v', 64, 64, (ctx) => {
@@ -394,16 +394,31 @@ export function generatePixelTextures(scene: Phaser.Scene) {
   createPixelCanvas('tree-pixel', 64, 64, (ctx) => {
     // shadow
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.beginPath(); ctx.arc(32, 54, 16, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(32, 54, 16, 6, 0, 0, Math.PI*2); ctx.fill();
     // Trunk
     ctx.fillStyle = '#451a03';
-    ctx.fillRect(28, 40, 8, 16);
-    // Leaves (layered circles)
-    ctx.fillStyle = '#065f46'; // dark green base
-    ctx.beginPath(); ctx.arc(32, 28, 24, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#10b981'; // light green highlight
-    ctx.beginPath(); ctx.arc(26, 22, 16, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(40, 24, 12, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(28, 30, 8, 26);
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(28, 30, 4, 26); // highlight
+
+    // Leaves (Clustered rectangles, NO CIRCLES)
+    const drawLeafCluster = (x: number, y: number, w: number, h: number, dark: boolean) => {
+      ctx.fillStyle = dark ? '#064e3b' : '#047857';
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = '#10b981'; // highlight
+      ctx.fillRect(x, y, w, 4);
+    };
+
+    drawLeafCluster(16, 16, 32, 24, false);
+    drawLeafCluster(8, 24, 24, 20, true);
+    drawLeafCluster(32, 20, 24, 24, true);
+    drawLeafCluster(20, 8, 24, 16, false);
+    
+    // Noise dots for texture
+    ctx.fillStyle = '#34d399';
+    for(let i=0; i<20; i++) {
+      ctx.fillRect(12 + Math.random()*40, 12 + Math.random()*32, 4, 4);
+    }
   });
 
   createPixelCanvas('safezone-pixel', 128, 128, (ctx) => {
