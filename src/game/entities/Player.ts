@@ -32,36 +32,42 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     speedMultiplier: number,
     joystickVector?: Phaser.Math.Vector2
   ) {
-    let baseSpeed = 160 * speedMultiplier;
+    let baseSpeed = 100 * speedMultiplier; // Reduced from 160 to 100
     let vx = 0;
     let vy = 0;
 
     if (joystickVector && (joystickVector.x !== 0 || joystickVector.y !== 0)) {
-      vx = joystickVector.x * baseSpeed;
-      vy = joystickVector.y * baseSpeed;
+      vx = joystickVector.x;
+      vy = joystickVector.y;
       
-      // Determine direction for animation
-      if (Math.abs(joystickVector.x) > Math.abs(joystickVector.y)) {
-        this.currentDirection = joystickVector.x > 0 ? 'right' : 'left';
+      if (Math.abs(vx) > Math.abs(vy)) {
+        this.currentDirection = vx > 0 ? 'right' : 'left';
       } else {
-        this.currentDirection = joystickVector.y > 0 ? 'down' : 'up';
+        this.currentDirection = vy > 0 ? 'down' : 'up';
       }
     } else {
       if (wasd.A.isDown || cursors.left?.isDown) {
-        vx -= baseSpeed;
+        vx -= 1;
         this.currentDirection = 'left';
       } else if (wasd.D.isDown || cursors.right?.isDown) {
-        vx += baseSpeed;
+        vx += 1;
         this.currentDirection = 'right';
       }
 
       if (wasd.W.isDown || cursors.up?.isDown) {
-        vy -= baseSpeed;
+        vy -= 1;
         this.currentDirection = 'up';
       } else if (wasd.S.isDown || cursors.down?.isDown) {
-        vy += baseSpeed;
+        vy += 1;
         this.currentDirection = 'down';
       }
+    }
+
+    // Normalize diagonal movement
+    if (vx !== 0 || vy !== 0) {
+      const len = Math.sqrt(vx * vx + vy * vy);
+      vx = (vx / len) * baseSpeed;
+      vy = (vy / len) * baseSpeed;
     }
 
     this.setVelocity(vx, vy);

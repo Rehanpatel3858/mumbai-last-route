@@ -57,6 +57,8 @@ export class MainGameScene extends Phaser.Scene {
   private joystickActive = false;
   private joystickVector = new Phaser.Math.Vector2(0, 0);
 
+  private floodWater!: Phaser.GameObjects.TileSprite;
+
   constructor() {
     super('MainGameScene');
   }
@@ -106,6 +108,13 @@ export class MainGameScene extends Phaser.Scene {
     this.cameras.main.setZoom(1.8); // Much closer, pixel-art RPG style
 
     this.createRainEffect(mapWidth);
+
+    // Dynamic Physical Flood Water Layer
+    this.floodWater = this.add.tileSprite(0, 0, mapWidth, mapHeight, 'water-anim');
+    this.floodWater.setOrigin(0, 0);
+    this.floodWater.setDepth(1); // Above roads (0), below player (10) and buildings (15)
+    this.floodWater.setAlpha(0);
+    this.floodWater.setBlendMode(Phaser.BlendModes.SCREEN);
 
     this.waterOverlayGraphics = this.add.graphics();
     this.waterOverlayGraphics.setDepth(20); // Above ground, below UI
@@ -259,19 +268,35 @@ export class MainGameScene extends Phaser.Scene {
   }
 
   private createRainEffect(mapWidth: number) {
+    const mapHeight = 2400;
+
+    // Fast moving rain streaks
     const rainParticles = this.add.particles(0, 0, 'debris-pixel', {
       x: { min: 0, max: mapWidth },
-      y: { min: 0, max: 2400 },
-      lifespan: 1200,
+      y: { min: 0, max: mapHeight },
+      quantity: 12,
+      lifespan: 600,
       speedY: { min: 800, max: 1200 },
-      speedX: { min: -200, max: -300 },
-      scale: { start: 0.15, end: 0.05 },
-      quantity: 16, // Very heavy monsoon rain
-      blendMode: 'ADD',
-      tint: 0xa5b4fc,
-      alpha: { start: 0.6, end: 0 }
+      speedX: { min: -100, max: -200 },
+      scale: { start: 0.8, end: 0.2 },
+      alpha: { start: 0.6, end: 0 },
+      tint: 0x94a3b8,
+      blendMode: 'ADD'
     });
     rainParticles.setDepth(20);
+
+    // Water Splash Ripples (Rain hitting the flood water)
+    const splashParticles = this.add.particles(0, 0, 'debris-pixel', {
+      x: { min: 0, max: mapWidth },
+      y: { min: 0, max: mapHeight },
+      quantity: 6,
+      lifespan: 300,
+      scale: { start: 0.2, end: 1.5 },
+      alpha: { start: 0.4, end: 0 },
+      tint: 0x38bdf8,
+      blendMode: 'ADD'
+    });
+    splashParticles.setDepth(2); // Just above the water
   }
 
   private onSecondTick() {
@@ -294,7 +319,7 @@ export class MainGameScene extends Phaser.Scene {
     }
   }
 
-  public update(time: number, delta: number) {
+  public update(_time: number, delta: number) {
     if (this.isGameOver) return;
 
     if (Phaser.Input.Keyboard.JustDown(this.wasd.ESC)) {
@@ -416,37 +441,17 @@ export class MainGameScene extends Phaser.Scene {
       this.joystickActive ? this.joystickVector : undefined
     );
 
-    // Water flooding overlay logic
+    // Dynamic Physical Flood Water Logic
+    const floodPercentage = ((420 - this.timeRemainingSeconds) / 420);
+    this.floodWater.setAlpha(floodPercentage * 0.95); // Fade in dynamically up to 95% opacity
+    this.floodWater.tilePositionX -= 1; // Directional flow
+    this.floodWater.tilePositionY += 0.5;
+
+    // Vehicle Submergence Overlay
+    this.waterOverlayGraphics.clear();
     if (this.currentPhaseIndex > 0) {
-      this.waterOverlayGraphics.clear();
-      const floodHeight = (this.currentPhaseIndex / 4) * 0.6; // Up to 60% opacity
-      
-      this.waterOverlayGraphics.fillStyle(0x0c4a6e, floodHeight * 0.8);
-      
-      // Draw water ONLY on roads (preventing covering buildings incorrectly)
-      for (const r of MapGenerator.geometry.roads) {
-        this.waterOverlayGraphics.fillRect(r.x, r.y, r.w, r.h);
-      }
-
-      // Flood Lowlands (Bottom Right) deeper
-      this.waterOverlayGraphics.fillStyle(0x0c4a6e, floodHeight);
-      this.waterOverlayGraphics.fillRect(1700, 1300, 1500, 1100);
-
-      // Animated ripples on screen, strictly within roads/lowlands roughly
-      const px = this.cameras.main.scrollX;
-      const py = this.cameras.main.scrollY;
-      this.waterOverlayGraphics.fillStyle(0x38bdf8, floodHeight * 0.5 + 0.1);
-      
-      for(let i=0; i<40; i++) {
-        const rx = px + ((time/2 + i*200) % this.cameras.main.width);
-        const ry = py + ((time/3 + i*150) % this.cameras.main.height);
-        // Only draw ripples if on roads or lowlands
-        this.waterOverlayGraphics.fillRect(rx, ry, (i%2===0)? 24:40, 2);
-      }
-
-      // Vehicle Submergence (draw a dark rectangle over the bottom half of all vehicles)
       const submergeRatio = this.currentPhaseIndex * 0.15; // 0.15 to 0.6
-      this.waterOverlayGraphics.fillStyle(0x082f49, floodHeight + 0.4);
+      this.waterOverlayGraphics.fillStyle(0x082f49, floodPercentage * 0.8 + 0.2);
       for (const child of this.children.list) {
         if (child.constructor.name === 'Vehicle') {
           const v = child as Phaser.GameObjects.Sprite;
@@ -455,8 +460,6 @@ export class MainGameScene extends Phaser.Scene {
           this.waterOverlayGraphics.fillRect(v.x - v.displayWidth/2, vBottom - subHeight, v.displayWidth, subHeight);
         }
       }
-    } else {
-      this.waterOverlayGraphics.clear();
     }
 
     // Follow logic for ALL rescued civilians - trailing behind player

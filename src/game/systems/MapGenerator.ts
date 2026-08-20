@@ -218,17 +218,40 @@ export class MapGenerator {
     }
   }
 
+  private static checkOverlap(px: number, py: number, bw: number, bh: number, padding: number): boolean {
+    for (const b of this.geometry.buildings) {
+      // Expanded bounding box check with padding
+      const left = b.x - padding;
+      const right = b.x + b.w + padding;
+      const top = b.y - padding;
+      const bottom = b.y + b.h + padding;
+
+      if (px + bw > left && px < right && py + bh > top && py < bottom) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private static generateLowlands(scene: Phaser.Scene, startX: number, startY: number, width: number, height: number, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup, doors: Door[], spots: {x:number,y:number}[]) {
-    for (let i = 0; i < 25; i++) {
-      const px = startX + 100 + Math.random() * (width - 300);
-      const py = startY + 100 + Math.random() * (height - 300);
+    let attempts = 0;
+    let placed = 0;
+    const padding = 60; // Minimum distance between buildings for alleys/roads
+    
+    while (placed < 25 && attempts < 500) {
+      attempts++;
+      const bw = 128;
+      const bh = 128;
+      const px = startX + 100 + Math.random() * (width - 300 - bw);
+      const py = startY + 100 + Math.random() * (height - 300 - bh);
       
-      if (!this.isInsideBuilding(px, py) && !this.isInsideBuilding(px+128, py+128)) {
-        this.addBuilding(scene, px, py, 128, 128, 'building-res', obstaclesGroup);
+      if (!this.checkOverlap(px, py, bw, bh, padding)) {
+        this.addBuilding(scene, px, py, bw, bh, 'building-res', obstaclesGroup);
         if (Math.random() > 0.5) {
-          doors.push(new Door(scene, px + 64, py + 128 + 20, 40, 20, `clinic-${i}`, 'CLINIC'));
+          doors.push(new Door(scene, px + 64, py + 128 + 20, 40, 20, `clinic-${placed}`, 'CLINIC'));
         }
         spots.push({ x: px - 50, y: py + 64 });
+        placed++;
       }
     }
   }
