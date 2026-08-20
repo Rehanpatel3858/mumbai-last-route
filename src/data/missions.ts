@@ -52,7 +52,7 @@ export const MISSIONS: Mission[] = [
     name: 'Kurla West Mithi Surge',
     location: 'LBS Marg & Mithi River Bank Sector',
     difficulty: 'SEVERE',
-    durationSeconds: 420,
+    durationSeconds: 330,
     targetCivilians: 14,
     isUnlocked: false,
     isPlayable: false,

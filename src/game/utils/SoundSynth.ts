@@ -161,6 +161,40 @@ class SoundSynth {
       osc.stop(now + 0.5);
     });
   }
+  public playThunder() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const duration = 2.5;
+
+    const bufferSize = this.ctx.sampleRate * duration;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const output = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    const whiteNoise = this.ctx.createBufferSource();
+    whiteNoise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(400, now);
+    filter.frequency.exponentialRampToValueAtTime(50, now + duration);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(1.0, now + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+    whiteNoise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    whiteNoise.start(now);
+  }
 }
 
 export const soundSynth = new SoundSynth();

@@ -251,3 +251,10 @@ h1, h2, h3, h4 {
   margin: 1rem auto;
   max-width: 600px;
 }
+
+/* Hide mobile controls on desktop devices */
+@media (hover: hover) and (pointer: fine) {
+  .mobile-controls {
+    display: none !important;
+  }
+}

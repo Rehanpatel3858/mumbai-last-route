@@ -15,6 +15,7 @@ export interface GameBridgeEvents {
   onCiviliansUpdate: (rescued: number, total: number) => void;
   onAlert: (sender: string, title: string, msg: string, severity: 'INFO' | 'WARNING' | 'CRITICAL') => void;
   onGameOver: (victory: boolean, score: ScoreBreakdown) => void;
+  onHealthUpdate: (health: number) => void;
   onToggleMap: (isOpen: boolean) => void;
   onMapUpdate: (data: any) => void;
 }
@@ -32,8 +33,8 @@ export class MainGameScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: { W: Phaser.Input.Keyboard.Key; A: Phaser.Input.Keyboard.Key; S: Phaser.Input.Keyboard.Key; D: Phaser.Input.Keyboard.Key; E: Phaser.Input.Keyboard.Key; F: Phaser.Input.Keyboard.Key; M: Phaser.Input.Keyboard.Key; ESC: Phaser.Input.Keyboard.Key; ENTER: Phaser.Input.Keyboard.Key; };
 
-  private totalDurationSeconds = 420;
-  private timeRemainingSeconds = 420;
+  private totalDurationSeconds = 330;
+  private timeRemainingSeconds = 330;
   private timerEvent!: Phaser.Time.TimerEvent;
 
   private currentPhaseIndex = 0;
@@ -65,7 +66,7 @@ export class MainGameScene extends Phaser.Scene {
 
   public init(data: { eventsBridge: GameBridgeEvents }) {
     this.eventsBridge = data.eventsBridge;
-    this.timeRemainingSeconds = 420;
+    this.timeRemainingSeconds = 330;
     this.isGameOver = false;
     this.isPaused = false;
     this.rescuedCivilians = [];
@@ -172,6 +173,8 @@ export class MainGameScene extends Phaser.Scene {
     this.eventsBridge.onCiviliansUpdate(0, this.totalCivilians);
 
     this.eventsBridge.onAlert('COMMAND', 'MISSION START', 'You are alone. Search the streets to find and rescue stranded civilians before the flood rises.', 'INFO');
+
+    this.scheduleNextLightning();
 
     // Mobile Action Listeners
     window.addEventListener('mobile-action-rescue', this.handleMobileRescue.bind(this));
@@ -347,6 +350,33 @@ export class MainGameScene extends Phaser.Scene {
     }
   }
 
+  private scheduleNextLightning() {
+    if (this.isGameOver) return;
+    const delay = Phaser.Math.Between(35000, 40000);
+    this.time.addEvent({
+      delay,
+      callback: this.triggerLightning,
+      callbackScope: this
+    });
+  }
+
+  private triggerLightning() {
+    if (this.isGameOver) return;
+    
+    if (!this.isPaused) {
+      // 1. Flash Camera
+      this.cameras.main.flash(200, 230, 240, 255, 0.6);
+      
+      // 2. Play Thunder Sound with short delay
+      this.time.delayedCall(Phaser.Math.Between(200, 600), () => {
+        soundSynth.playThunder();
+      });
+    }
+
+    // Schedule the next one
+    this.scheduleNextLightning();
+  }
+
   public update(_time: number, delta: number) {
     if (this.isGameOver) return;
 
@@ -470,7 +500,7 @@ export class MainGameScene extends Phaser.Scene {
     );
 
     // Dynamic Physical Flood Water Logic
-    const floodPercentage = ((420 - this.timeRemainingSeconds) / 420);
+    const floodPercentage = ((330 - this.timeRemainingSeconds) / 330);
     this.floodWater.setAlpha(floodPercentage * 0.95); // Fade in dynamically up to 95% opacity
     this.floodWater.tilePositionX -= 1; // Directional flow
     this.floodWater.tilePositionY += 0.5;
@@ -519,6 +549,23 @@ export class MainGameScene extends Phaser.Scene {
       this.hazardHits++;
       h.disableBody(true, true);
       soundSynth.playDamage();
+      
+      // Damage Logic
+      this.player.health -= 20;
+      this.eventsBridge.onHealthUpdate(this.player.health);
+      
+      // Screen Flash
+      this.cameras.main.flash(300, 255, 0, 0, 0.4);
+      
+      // Player Tint Flash
+      this.player.setTint(0xff0000);
+      this.time.delayedCall(200, () => {
+        if (!this.isGameOver) this.player.clearTint();
+      });
+
+      if (this.player.health <= 0) {
+        this.finishGame(false);
+      }
     }
   }
 

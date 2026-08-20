@@ -64,19 +64,26 @@ export class MapGenerator {
     // DISTRICT D: Flooded Lowlands [Bottom Right: 1700 to 3200, 1300 to 2400]
     this.generateLowlands(scene, 1700, 1300, 1500, 1100, obstaclesGroup, doors, validVehicleSpots);
 
-    // Scatted Environmental Props (Trees, Barricades, Food Carts)
-    for(let i=0; i<80; i++) {
+    // Scatted Environmental Props (Trees, Barricades, Food Carts, Grass)
+    for(let i=0; i<150; i++) {
       const px = Math.random() * mapWidth;
       const py = Math.random() * mapHeight;
-      if (!this.isInsideBuilding(px, py)) {
+      if (!this.isInsideBuilding(px, py) && !this.isInsideRoad(px, py)) {
         const rand = Math.random();
-        let type = 'barricade';
-        if (rand > 0.6) type = 'tree-pixel';
-        if (rand > 0.85) type = 'food-cart';
+        let type = 'grass-patch';
+        if (rand > 0.5) type = 'tree-pixel';
+        if (rand > 0.8) type = 'barricade';
+        if (rand > 0.9) type = 'food-cart';
         
-        const b = scene.add.image(px, py, type).setDepth(type === 'tree-pixel' ? 25 : 5);
-        scene.physics.add.existing(b, true);
-        obstaclesGroup.add(b);
+        const b = scene.add.image(px, py, type);
+        
+        if (type === 'grass-patch') {
+          b.setDepth(1); // just above road
+        } else {
+          b.setDepth(type === 'tree-pixel' ? 25 : 5);
+          scene.physics.add.existing(b, true);
+          obstaclesGroup.add(b);
+        }
       }
     }
 
@@ -139,6 +146,15 @@ export class MapGenerator {
   private static isInsideBuilding(x: number, y: number): boolean {
     for (const b of this.geometry.buildings) {
       if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static isInsideRoad(x: number, y: number): boolean {
+    for (const r of this.geometry.roads) {
+      if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) {
         return true;
       }
     }

@@ -20,7 +20,8 @@ export const GameContainer: React.FC = () => {
 
   const { handleGameOver, activeScore, gameStatus, setGameStatus } = useGameState();
 
-  const [timeRemaining, setTimeRemaining] = useState<number>(420);
+  const [timeRemaining, setTimeRemaining] = useState<number>(330);
+  const [health, setHealth] = useState<number>(100);
   const [currentPhase, setCurrentPhase] = useState<FloodPhase>(FLOOD_PHASES[0]);
   const [rescuedCount, setRescuedCount] = useState<number>(0);
   const [totalCivilians, setTotalCivilians] = useState<number>(10);
@@ -41,6 +42,7 @@ export const GameContainer: React.FC = () => {
 
     const bridgeEvents: GameBridgeEvents = {
       onTimeUpdate: (secs: number) => setTimeRemaining(secs),
+      onHealthUpdate: (hp: number) => setHealth(hp),
       onPhaseUpdate: (phase: FloodPhase) => setCurrentPhase(phase),
       onCiviliansUpdate: (rescued: number, total: number) => {
         setRescuedCount(rescued);
@@ -84,6 +86,7 @@ export const GameContainer: React.FC = () => {
       gameRef.current.scene.start('BootScene', {
         eventsBridge: {
           onTimeUpdate: (secs: number) => setTimeRemaining(secs),
+          onHealthUpdate: (hp: number) => setHealth(hp),
           onPhaseUpdate: (phase: FloodPhase) => setCurrentPhase(phase),
           onCiviliansUpdate: (rescued: number, total: number) => {
             setRescuedCount(rescued);
@@ -109,6 +112,7 @@ export const GameContainer: React.FC = () => {
 
       <GameHUD
         timeRemainingSeconds={timeRemaining}
+        health={health}
         currentPhase={currentPhase}
         rescuedCount={rescuedCount}
         totalCivilians={totalCivilians}

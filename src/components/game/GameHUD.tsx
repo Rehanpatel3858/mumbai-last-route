@@ -3,6 +3,7 @@ import type { FloodPhase } from '../../game/systems/FloodSystem';
 
 interface GameHUDProps {
   timeRemainingSeconds: number;
+  health: number;
   currentPhase: FloodPhase;
   rescuedCount: number;
   totalCivilians: number;
@@ -12,6 +13,7 @@ interface GameHUDProps {
 
 export const GameHUD: React.FC<GameHUDProps> = ({
   timeRemainingSeconds,
+  health,
   currentPhase,
   rescuedCount,
   totalCivilians,
@@ -24,7 +26,14 @@ export const GameHUD: React.FC<GameHUDProps> = ({
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const floodPercentage = Math.min(100, Math.floor(((420 - timeRemainingSeconds) / 420) * 100));
+  const floodPercentage = Math.min(100, Math.floor(((330 - timeRemainingSeconds) / 330) * 100));
+
+  // Calculate health bar visuals
+  const healthBars = Math.floor(health / 10);
+  const healthBarString = '█'.repeat(healthBars) + ' '.repeat(10 - healthBars);
+  let healthColor = 'var(--accent-green)';
+  if (health <= 50) healthColor = 'var(--accent-orange)';
+  if (health <= 20) healthColor = 'var(--accent-red)';
 
   return (
     <div className="hud-container" style={{ pointerEvents: 'none' }}>
@@ -32,12 +41,17 @@ export const GameHUD: React.FC<GameHUDProps> = ({
       {/* Top Header Row */}
       <div className="flex-between" style={{ alignItems: 'flex-start', marginBottom: '1rem', padding: '1rem' }}>
         
-        {/* Top Left: Title */}
-        <div style={{ flex: 1 }}>
+        {/* Top Left: Title & Health */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <h1 className="text-white" style={{ fontSize: '1.2rem', margin: 0, lineHeight: 1.1 }}>
             MUMBAI:<br/>
             <span className="text-cyan">LAST SAFE ROUTE</span>
           </h1>
+          <div className="game-panel" style={{ width: 'fit-content', padding: '0.4rem 0.8rem' }}>
+            <div style={{ fontSize: '1rem', color: healthColor, fontFamily: 'monospace', whiteSpace: 'pre' }}>
+              {healthBarString} <span style={{fontSize: '0.8rem'}}>{health}%</span>
+            </div>
+          </div>
         </div>
 
         {/* Top Center: Flood Level */}

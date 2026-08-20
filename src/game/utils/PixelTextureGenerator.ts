@@ -524,6 +524,35 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     ctx.fillRect(16, 20, 4, 8);
   });
 
+  createPixelCanvas('debris-pixel', 8, 8, (ctx) => {
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(2, 2, 4, 4);
+  });
+
+  createPixelCanvas('grass-patch', 32, 32, (ctx) => {
+    // A detailed, wet grass patch pixel texture
+    const drawBlade = (x: number, y: number, h: number, c: string) => {
+      ctx.fillStyle = c;
+      ctx.fillRect(x, y - h, 2, h);
+    };
+    
+    // Mud / wet base
+    ctx.fillStyle = '#14532d'; // Dark green/brownish wet dirt
+    ctx.beginPath();
+    ctx.ellipse(16, 24, 14, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Random grass blades
+    for (let i = 0; i < 20; i++) {
+      const gx = 6 + Math.random() * 20;
+      const gy = 20 + Math.random() * 8;
+      const gh = 4 + Math.random() * 6;
+      const isWet = Math.random() > 0.5;
+      const color = isWet ? '#065f46' : '#10b981'; // dark wet green vs bright green
+      drawBlade(Math.floor(gx), Math.floor(gy), Math.floor(gh), color);
+    }
+  });
+
   createPixelCanvas('debris-pixel', 32, 32, (ctx) => {
     ctx.fillStyle = '#78350f'; ctx.fillRect(4, 4, 24, 24);
     ctx.fillStyle = '#b45309'; ctx.fillRect(6, 6, 20, 20);
@@ -536,29 +565,25 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     // shadow
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.beginPath(); ctx.ellipse(32, 54, 16, 6, 0, 0, Math.PI*2); ctx.fill();
-    // Trunk
-    ctx.fillStyle = '#451a03';
-    ctx.fillRect(28, 30, 8, 26);
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(28, 30, 4, 26); // highlight
-
-    // Leaves (Clustered rectangles, NO CIRCLES)
-    const drawLeafCluster = (x: number, y: number, w: number, h: number, dark: boolean) => {
-      ctx.fillStyle = dark ? '#064e3b' : '#047857';
-      ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = '#10b981'; // highlight
-      ctx.fillRect(x, y, w, 4);
-    };
-
-    drawLeafCluster(16, 16, 32, 24, false);
-    drawLeafCluster(8, 24, 24, 20, true);
-    drawLeafCluster(32, 20, 24, 24, true);
-    drawLeafCluster(20, 8, 24, 16, false);
     
-    // Noise dots for texture
-    ctx.fillStyle = '#34d399';
-    for(let i=0; i<20; i++) {
-      ctx.fillRect(12 + Math.random()*40, 12 + Math.random()*32, 4, 4);
+    // Trunk with bark texture
+    ctx.fillStyle = '#451a03'; // dark bark
+    ctx.fillRect(28, 30, 8, 26);
+    ctx.fillStyle = '#78350f'; // mid bark
+    ctx.fillRect(28, 30, 4, 26);
+    ctx.fillStyle = '#92400e'; // light bark stripe
+    ctx.fillRect(29, 32, 2, 20);
+
+    // Branches
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(20, 26, 8, 4); // left branch
+    ctx.fillRect(36, 22, 8, 4); // right branch
+
+    // Detailed Pixel Leaves (Many overlapping small rectangles)
+    const drawLeafBlock = (x: number, y: number, w: number, h: number) => {
+      // Base dark
+      ctx.fillStyle = '#064e3b';
+      ctx.fillRect(x, y, w, h);
     }
   });
 
