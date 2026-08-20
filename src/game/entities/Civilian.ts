@@ -6,6 +6,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
   public civilianType: CivilianType;
   public isRescued: boolean = false;
   public labelText: Phaser.GameObjects.Text;
+  public nameLabelStr: string;
 
   constructor(scene: Phaser.Scene, x: number, y: number, type: CivilianType, nameLabel: string) {
     let textureKey = 'civilian-normal';
@@ -21,7 +22,8 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(8);
 
     // Label above head
-    this.labelText = scene.add.text(x, y - 22, `[E] ${nameLabel}`, {
+    this.nameLabelStr = nameLabel;
+    this.labelText = scene.add.text(x, y - 22, nameLabel, {
       fontSize: '11px',
       color: '#ff2a5f',
       backgroundColor: '#000000bb',

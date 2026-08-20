@@ -265,8 +265,12 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     ctx.fillRect(8, 50, 112, 14);
 
     // Body
-    ctx.fillStyle = '#b91c1c'; // RED BEST BUS
+    ctx.fillStyle = '#dc2626'; // Bright RED BEST BUS
     ctx.fillRect(10, 10, 108, 44);
+    // Highlight
+    ctx.fillStyle = '#f87171';
+    ctx.fillRect(10, 10, 108, 4);
+    
     ctx.fillStyle = '#991b1b'; // lower dark body
     ctx.fillRect(10, 36, 108, 18);
     // Yellow stripe
@@ -275,15 +279,20 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     // Windows
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(16, 16, 96, 14);
+    // Window reflections
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.beginPath(); ctx.moveTo(20, 16); ctx.lineTo(16, 30); ctx.lineTo(26, 30); ctx.lineTo(30, 16); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(50, 16); ctx.lineTo(46, 30); ctx.lineTo(56, 30); ctx.lineTo(60, 16); ctx.fill();
+    
     ctx.fillStyle = '#64748b'; // pillars
     for(let i=0; i<6; i++) ctx.fillRect(26 + i*16, 16, 4, 14);
     // Wheels
     ctx.fillStyle = '#020617';
-    ctx.fillRect(24, 52, 16, 8);
-    ctx.fillRect(88, 52, 16, 8);
+    ctx.fillRect(24, 52, 16, 10);
+    ctx.fillRect(88, 52, 16, 10);
     ctx.fillStyle = '#94a3b8'; // hubcaps
-    ctx.fillRect(28, 54, 8, 4);
-    ctx.fillRect(92, 54, 8, 4);
+    ctx.fillRect(28, 54, 8, 6);
+    ctx.fillRect(92, 54, 8, 6);
     // Details
     ctx.fillStyle = '#fef08a'; // headlights
     ctx.fillRect(116, 42, 4, 6);
@@ -302,18 +311,25 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     // Yellow top
     ctx.fillStyle = '#eab308';
     ctx.fillRect(6, 4, 36, 14);
+    ctx.fillStyle = '#fde047'; // highlight
+    ctx.fillRect(6, 4, 36, 2);
     // Black bottom
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(6, 18, 36, 8);
     // Windows
-    ctx.fillStyle = '#38bdf8'; // glass
+    ctx.fillStyle = '#0f172a'; // dark inside
     ctx.fillRect(28, 8, 10, 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)'; // reflection
+    ctx.fillRect(30, 8, 4, 8);
     ctx.fillStyle = '#1e293b'; // frame
     ctx.fillRect(24, 8, 4, 10);
     // Wheels
     ctx.fillStyle = '#020617';
     ctx.fillRect(10, 26, 8, 6);
     ctx.fillRect(32, 26, 8, 6);
+    // Front wheel connector
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(36, 20, 2, 6);
   });
 
   createPixelCanvas('car-pixel', 64, 32, (ctx) => {
@@ -322,6 +338,8 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     // Blue body
     ctx.fillStyle = '#2563eb';
     ctx.fillRect(6, 12, 52, 14);
+    ctx.fillStyle = '#60a5fa'; // highlight
+    ctx.fillRect(6, 12, 52, 2);
     // Roof
     ctx.fillStyle = '#1d4ed8';
     ctx.fillRect(16, 4, 30, 8);
@@ -329,6 +347,9 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(18, 6, 10, 6);
     ctx.fillRect(30, 6, 12, 6);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)'; // reflection
+    ctx.fillRect(20, 6, 4, 6);
+    ctx.fillRect(34, 6, 4, 6);
     // Wheels
     ctx.fillStyle = '#020617';
     ctx.fillRect(12, 26, 10, 6);
@@ -469,6 +490,9 @@ export function generatePixelTextures(scene: Phaser.Scene) {
 
   // 8. NEW MUMBAI PROPS & VEHICLES
   createPixelCanvas('food-cart', 48, 48, (ctx) => {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath(); ctx.arc(24, 44, 16, 0, Math.PI*2); ctx.fill();
     // Umbrella
     ctx.fillStyle = '#ef4444'; // red/yellow umbrella
     ctx.beginPath(); ctx.arc(24, 16, 20, Math.PI, 0); ctx.fill();
@@ -477,18 +501,22 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     // Pole
     ctx.fillStyle = '#94a3b8';
     ctx.fillRect(23, 16, 2, 16);
-    // Cart
-    ctx.fillStyle = '#0ea5e9'; // blue cart
+    // Cart Body (Wooden)
+    ctx.fillStyle = '#78350f'; 
     ctx.fillRect(8, 32, 32, 12);
+    ctx.fillStyle = '#92400e';
+    ctx.fillRect(8, 32, 32, 2); // Counter top
     // Wheels
     ctx.fillStyle = '#0f172a';
     ctx.beginPath(); ctx.arc(14, 44, 4, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(34, 44, 4, 0, Math.PI*2); ctx.fill();
-    // Pans / Food
+    // Pans / Food / Vada Pav
     ctx.fillStyle = '#475569';
     ctx.fillRect(12, 30, 10, 2); // pan
     ctx.fillStyle = '#eab308'; // vada pav / bhajiya
     ctx.fillRect(14, 28, 6, 2);
+    ctx.fillStyle = '#f97316'; // chutney
+    ctx.fillRect(26, 30, 4, 2);
   });
 
   createPixelCanvas('street-light', 32, 64, (ctx) => {
@@ -528,12 +556,17 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     // Kaali-Peeli Taxi
     ctx.fillStyle = '#0f172a'; // black bottom
     ctx.fillRect(6, 16, 52, 10);
+    // Highlight
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(6, 16, 52, 2);
     ctx.fillStyle = '#facc15'; // yellow top
     ctx.fillRect(14, 4, 34, 12);
     // Windows
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#0f172a';
     ctx.fillRect(18, 6, 10, 8);
     ctx.fillRect(32, 6, 12, 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillRect(20, 6, 4, 8);
     // Wheels
     ctx.fillStyle = '#020617';
     ctx.fillRect(12, 24, 8, 8);
@@ -547,10 +580,15 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     // Body (white/gray scooter)
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(6, 16, 20, 8);
+    ctx.fillStyle = '#e2e8f0'; // shading
+    ctx.fillRect(6, 20, 20, 4);
     ctx.fillRect(22, 10, 6, 10); // front panel
     // Seat
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(8, 14, 12, 4);
+    // Handlebar
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(24, 8, 2, 2);
     // Wheels
     ctx.fillStyle = '#020617';
     ctx.beginPath(); ctx.arc(8, 26, 4, 0, Math.PI*2); ctx.fill();

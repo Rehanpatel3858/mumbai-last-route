@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 export class InteriorScene extends Phaser.Scene {
   private type!: 'SHOP' | 'CLINIC' | 'APARTMENT';
-  private wasd!: { E: Phaser.Input.Keyboard.Key };
+  private wasd!: { F: Phaser.Input.Keyboard.Key };
 
   constructor() {
     super('InteriorScene');
@@ -32,7 +32,7 @@ export class InteriorScene extends Phaser.Scene {
 
     // Door / Exit marker at bottom
     this.add.rectangle(400, 430, 80, 20, 0x475569).setOrigin(0.5); // Door mat
-    this.add.text(400, 410, '[E] EXIT', {
+    this.add.text(400, 410, '[F] EXIT', {
       fontFamily: 'monospace',
       fontSize: '12px',
       color: '#ffffff',
@@ -44,13 +44,13 @@ export class InteriorScene extends Phaser.Scene {
 
     if (this.input.keyboard) {
       this.wasd = {
-        E: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E),
+        F: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F)
       };
     }
   }
 
   public update() {
-    if (Phaser.Input.Keyboard.JustDown(this.wasd.E)) {
+    if (this.wasd && Phaser.Input.Keyboard.JustDown(this.wasd.F)) {
       // Exit back to MainGameScene
       this.scene.stop();
       this.scene.resume('MainGameScene');

@@ -13,7 +13,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setCollideWorldBounds(true);
     this.setDepth(10);
-    this.body?.setSize(20, 24);
+    this.body?.setSize(14, 14); // Very tight for narrow alleys
     this.setScale(1.2);
 
     this.flashlightGraphics = scene.add.graphics();
