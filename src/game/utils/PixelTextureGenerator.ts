@@ -428,64 +428,133 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     ctx.fillText('EVACUATION', 36, 110);
   });
 
-  // 7. NEW MUMBAI SPECIFIC BUILDINGS
-  createPixelCanvas('building-chawl', 256, 128, (ctx) => {
-    // Weathered plaster
-    ctx.fillStyle = '#e2e8f0';
-    ctx.fillRect(0, 0, 256, 128);
-    // Grunge / Moss at the bottom
+  // 7. NEW 2.5D MUMBAI SPECIFIC BUILDINGS
+  createPixelCanvas('building-shop', 128, 128, (ctx) => {
+    // Roof (Top 64px)
     ctx.fillStyle = '#475569';
-    for (let x = 0; x < 256; x += 16) ctx.fillRect(x, 110 + Math.random() * 10, 16, 18);
+    ctx.fillRect(0, 0, 128, 64);
+    ctx.fillStyle = '#334155'; // Roof border
+    ctx.fillRect(0, 0, 128, 4);
+    ctx.fillRect(0, 60, 128, 4);
+    ctx.fillRect(0, 0, 4, 64);
+    ctx.fillRect(124, 0, 4, 64);
+    // Roof details (AC, Water tank)
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(20, 20, 24, 24);
+    ctx.fillStyle = '#000000'; // Sintex
+    ctx.beginPath(); ctx.arc(90, 30, 12, 0, Math.PI*2); ctx.fill();
+
+    // Facade (Bottom 64px)
+    ctx.fillStyle = '#e2e8f0'; // plaster
+    ctx.fillRect(0, 64, 128, 64);
     
-    // Corridors and Doors (3 floors)
-    for (let r = 0; r < 3; r++) {
-      const y = 20 + r * 32;
-      // Balcony railing
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(10, y + 20, 236, 4);
-      for (let x = 10; x < 246; x += 8) ctx.fillRect(x, y + 16, 2, 4);
+    // Shutters / Shops
+    ctx.fillStyle = '#64748b'; // metal shutter
+    ctx.fillRect(10, 80, 40, 48);
+    for(let i=80; i<128; i+=4) {
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(10, i, 40, 2);
+    }
+    // Signboard
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(10, 68, 108, 12);
+    ctx.fillStyle = '#fef08a';
+    ctx.font = '8px monospace';
+    ctx.fillText('GENERAL STORES', 14, 76);
+
+    // Second shop (open)
+    ctx.fillStyle = '#0f172a'; // dark interior
+    ctx.fillRect(60, 80, 58, 48);
+    ctx.fillStyle = '#facc15'; // light
+    ctx.fillRect(60, 80, 58, 4);
+    // Shelves inside
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(64, 90, 50, 4);
+    ctx.fillRect(64, 100, 50, 4);
+    ctx.fillRect(64, 110, 50, 4);
+  });
+
+  createPixelCanvas('building-chawl', 256, 192, (ctx) => {
+    // 2.5D Chawl. Top 64px is roof, Bottom 128px is facade (2 floors)
+    // Roof
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(0, 0, 256, 64);
+    // Tanks
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(40, 10, 30, 20);
+    ctx.fillRect(180, 20, 24, 24);
+
+    // Facade
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(0, 64, 256, 128);
+
+    // Floor 1 (Y: 64 to 128)
+    // Floor 2 (Y: 128 to 192)
+    for (let r = 0; r < 2; r++) {
+      const y = 64 + r * 64;
+      // Balcony
+      ctx.fillStyle = '#0f172a'; // shadow behind railing
+      ctx.fillRect(10, y + 24, 236, 40);
       
-      // Doors
+      // Railing
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(10, y + 20, 236, 4);
+      for (let x = 10; x < 246; x += 12) ctx.fillRect(x, y + 20, 2, 44);
+
+      // Doors in shadow
       for (let d = 0; d < 6; d++) {
         const x = 20 + d * 38;
         ctx.fillStyle = '#78350f'; // wood door
-        ctx.fillRect(x, y, 14, 20);
-        // Clothes hanging outside some doors
-        if (Math.random() > 0.5) {
-          ctx.fillStyle = Math.random() > 0.5 ? '#ef4444' : '#3b82f6'; // random cloth color
-          ctx.fillRect(x + 16, y + 10, 10, 12);
-          ctx.fillStyle = '#94a3b8'; // wire
-          ctx.fillRect(x + 16, y + 10, 10, 1);
+        ctx.fillRect(x, y + 24, 18, 40);
+        // Clothes hanging
+        if (Math.random() > 0.4) {
+          ctx.fillStyle = Math.random() > 0.5 ? '#ef4444' : '#3b82f6';
+          ctx.fillRect(x + 10, y + 10, 12, 16);
+          ctx.fillStyle = '#475569'; // wire
+          ctx.fillRect(x + 10, y + 10, 12, 1);
         }
       }
     }
-    // Water tanks on roof
-    ctx.fillStyle = '#000000'; // black sintex tank
-    ctx.fillRect(40, 0, 24, 16);
+  });
+
+  createPixelCanvas('building-res', 128, 128, (ctx) => {
+    // Roof
     ctx.fillStyle = '#1e293b';
-    ctx.fillRect(180, 4, 20, 12);
+    ctx.fillRect(0, 0, 128, 64);
+    // Facade
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(0, 64, 128, 64);
+    // Window
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(20, 80, 24, 32);
+    ctx.fillStyle = '#cbd5e1'; // grills
+    ctx.fillRect(30, 80, 2, 32);
+    ctx.fillRect(20, 96, 24, 2);
+    // Door
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(70, 76, 30, 52);
   });
 
   createPixelCanvas('railway-platform', 256, 128, (ctx) => {
-    ctx.fillStyle = '#94a3b8'; // concrete platform
-    ctx.fillRect(0, 0, 256, 128);
-    // Yellow warning line
-    ctx.fillStyle = '#facc15';
-    ctx.fillRect(0, 100, 256, 8);
-    // Track area
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(0, 112, 256, 16);
-    ctx.fillStyle = '#334155'; // sleepers
-    for(let x = 0; x < 256; x += 16) ctx.fillRect(x, 114, 4, 12);
-    // Benches & signs
-    ctx.fillStyle = '#fef08a'; // yellow board
-    ctx.fillRect(100, 20, 56, 16);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(104, 24, 48, 8); // text placeholder
-    
-    // Metal roof pillars
+    // 2.5D Platform. Top 64 is roof, bottom 64 is platform floor + train?
+    // Platform Floor
     ctx.fillStyle = '#64748b';
-    for(let x = 20; x < 256; x += 80) ctx.fillRect(x, 0, 8, 100);
+    ctx.fillRect(0, 0, 256, 128);
+    // Yellow edge
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(0, 116, 256, 12);
+    // Roof Overhang (Top 64)
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(0, 0, 256, 64);
+    // Pillars
+    ctx.fillStyle = '#475569';
+    for(let x=20; x<256; x+=80) ctx.fillRect(x, 64, 12, 52);
+    // Station Sign
+    ctx.fillStyle = '#fef08a';
+    ctx.fillRect(100, 20, 56, 20);
+    ctx.fillStyle = '#000000';
+    ctx.font = '10px monospace';
+    ctx.fillText('STATION', 104, 34);
   });
 
   // 8. NEW MUMBAI PROPS & VEHICLES
@@ -502,9 +571,81 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#94a3b8';
     ctx.fillRect(23, 16, 2, 16);
     // Cart Body (Wooden)
-    ctx.fillStyle = '#78350f'; 
-    ctx.fillRect(8, 32, 32, 12);
+  // 2. PLAYER & NPCs
+  // 2.5D Player (Head, shoulders, backpack)
+  createPixelCanvas('player-pixel', 32, 32, (ctx) => {
+    // shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.beginPath(); ctx.ellipse(16, 28, 10, 4, 0, 0, Math.PI * 2); ctx.fill();
+    
+    // Backpack
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(8, 12, 16, 12);
+    ctx.fillStyle = '#f59e0b'; // bag highlight
+    ctx.fillRect(8, 12, 16, 2);
+
+    // Torso (Raincoat)
+    ctx.fillStyle = '#ea580c';
+    ctx.fillRect(10, 14, 12, 10);
+
+    // Head
+    ctx.fillStyle = '#fcd34d'; // skin
+    ctx.beginPath(); ctx.arc(16, 10, 6, 0, Math.PI * 2); ctx.fill();
+    // Hair
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath(); ctx.arc(16, 8, 6, 0, Math.PI, true); ctx.fill();
+
+    // Flashlight
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(22, 16, 4, 6);
+    ctx.fillStyle = '#fef08a';
+    ctx.fillRect(23, 22, 2, 2);
+  });
+
+  // 2.5D Civilians
+  const createCivilian25D = (id: string, color: string, skin: string) => {
+    createPixelCanvas(id, 32, 32, (ctx) => {
+      // shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath(); ctx.ellipse(16, 28, 8, 3, 0, 0, Math.PI * 2); ctx.fill();
+      
+      // Torso
+      ctx.fillStyle = color;
+      ctx.fillRect(11, 14, 10, 10);
+      
+      // Head
+      ctx.fillStyle = skin;
+      ctx.beginPath(); ctx.arc(16, 10, 5, 0, Math.PI * 2); ctx.fill();
+      // Hair
+      ctx.fillStyle = '#475569';
+      ctx.beginPath(); ctx.arc(16, 8, 5, 0, Math.PI, true); ctx.fill();
+    });
+  };
+
+  createCivilian25D('civilian-normal', '#3b82f6', '#fcd34d');
+  createCivilian25D('civilian-child', '#22c55e', '#fde68a');
+  createCivilian25D('civilian-injured', '#ef4444', '#f87171');
+  createCivilian25D('civilian-elderly', '#a855f7', '#d1d5db');
+
+  // 3. INTERACTABLES
+  createPixelCanvas('door-pixel', 32, 48, (ctx) => {
+    // Wall cutout
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(0, 0, 32, 48);
+    // Door frame
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(2, 2, 28, 46);
+    // Door
     ctx.fillStyle = '#92400e';
+    ctx.fillRect(4, 4, 24, 44);
+    // Panels
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(6, 6, 20, 16);
+    ctx.fillRect(6, 24, 20, 20);
+    // Handle
+    ctx.fillStyle = '#fcd34d';
+    ctx.beginPath(); ctx.arc(24, 24, 2, 0, Math.PI * 2); ctx.fill();
+  });
     ctx.fillRect(8, 32, 32, 2); // Counter top
     // Wheels
     ctx.fillStyle = '#0f172a';

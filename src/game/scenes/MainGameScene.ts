@@ -52,12 +52,26 @@ export class MainGameScene extends Phaser.Scene {
   private waterAnimTimer = 0;
   private waterFrame = 0;
 
+  private vehiclesGroup!: Phaser.Physics.Arcade.StaticGroup;
+
   constructor() {
     super('MainGameScene');
   }
 
   public init(data: { eventsBridge: GameBridgeEvents }) {
     this.eventsBridge = data.eventsBridge;
+    this.timeRemainingSeconds = 420;
+    this.isGameOver = false;
+    this.isPaused = false;
+    this.rescuedCivilians = [];
+    this.hazardHits = 0;
+    this.currentPhaseIndex = 0;
+    this.doors = [];
+    this.mapOpen = false;
+    // Clear old physics state if restarting
+    if (this.physics.world) {
+      this.physics.resume();
+    }
   }
 
   public create() {
@@ -68,6 +82,7 @@ export class MainGameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
 
     this.obstaclesGroup = this.physics.add.staticGroup();
+    this.vehiclesGroup = this.physics.add.staticGroup();
     this.civiliansGroup = this.add.group();
     this.hazardsGroup = this.physics.add.group();
 
@@ -78,7 +93,8 @@ export class MainGameScene extends Phaser.Scene {
       this.obstaclesGroup,
       this.civiliansGroup,
       this.hazardsGroup,
-      this.doors
+      this.doors,
+      this.vehiclesGroup
     );
 
     // Spawn player alone in an empty street intersection
@@ -89,9 +105,11 @@ export class MainGameScene extends Phaser.Scene {
     this.createRainEffect(mapWidth);
 
     this.waterOverlayGraphics = this.add.graphics();
-    this.waterOverlayGraphics.setDepth(15);
+    this.waterOverlayGraphics.setDepth(20); // Above ground, below UI
 
     if (this.input.keyboard) {
+      // Remove old listener if any
+      this.input.keyboard.removeAllKeys();
       this.cursors = this.input.keyboard.createCursorKeys();
       this.wasd = {
         W: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
@@ -105,7 +123,9 @@ export class MainGameScene extends Phaser.Scene {
       };
     }
 
+    // Player Collision
     this.physics.add.collider(this.player, this.obstaclesGroup);
+    this.physics.add.collider(this.player, this.vehiclesGroup);
     this.physics.add.overlap(this.player, this.hazardsGroup, this.handleHazardOverlap, undefined, this);
 
     soundSynth.playRain();

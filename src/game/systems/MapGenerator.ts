@@ -20,7 +20,8 @@ export class MapGenerator {
     obstaclesGroup: Phaser.Physics.Arcade.StaticGroup,
     civiliansGroup: Phaser.GameObjects.Group,
     hazardsGroup: Phaser.Physics.Arcade.Group,
-    doors: Door[]
+    doors: Door[],
+    vehiclesGroup: Phaser.Physics.Arcade.StaticGroup
   ): SafeZone {
     this.geometry = { buildings: [], roads: [] };
 
@@ -39,18 +40,22 @@ export class MapGenerator {
 
     // Populate main roads with valid vehicle spots
     for(let x=200; x<3000; x+=200) {
-      validVehicleSpots.push({ x, y: 1150 });
-      validVehicleSpots.push({ x, y: 1250 });
+      if (x < 1400 || x > 1700) {
+        validVehicleSpots.push({ x, y: 1150 });
+        validVehicleSpots.push({ x, y: 1250 });
+      }
     }
     for(let y=200; y<2200; y+=200) {
-      validVehicleSpots.push({ x: 1550, y });
-      validVehicleSpots.push({ x: 1650, y });
+      if (y < 1000 || y > 1300) {
+        validVehicleSpots.push({ x: 1550, y });
+        validVehicleSpots.push({ x: 1650, y });
+      }
     }
 
-    // DISTRICT A: Hindmata Market (Dense shops, food carts) [Top Left: 0 to 1500, 0 to 1100]
+    // DISTRICT A: Hindmata Market [Top Left: 0 to 1500, 0 to 1100]
     this.generateMarketDistrict(scene, 0, 0, 1500, 1100, obstaclesGroup, doors, validVehicleSpots);
 
-    // DISTRICT B: Chawl / Residential (Narrow lanes) [Bottom Left: 0 to 1500, 1300 to 2400]
+    // DISTRICT B: Chawl / Residential [Bottom Left: 0 to 1500, 1300 to 2400]
     this.generateResidentialDistrict(scene, 0, 1300, 1500, 1100, obstaclesGroup, doors, validVehicleSpots);
 
     // DISTRICT C: Railway Area [Top Right: 1700 to 3200, 0 to 1100]
@@ -59,22 +64,23 @@ export class MapGenerator {
     // DISTRICT D: Flooded Lowlands [Bottom Right: 1700 to 3200, 1300 to 2400]
     this.generateLowlands(scene, 1700, 1300, 1500, 1100, obstaclesGroup, doors, validVehicleSpots);
 
-    // Scatted Props globally
-    for(let i=0; i<40; i++) {
+    // Scatted Environmental Props (Trees, Barricades)
+    for(let i=0; i<60; i++) {
       const px = Math.random() * mapWidth;
       const py = Math.random() * mapHeight;
       if (!this.isInsideBuilding(px, py)) {
-        const b = scene.add.image(px, py, 'barricade').setDepth(5);
+        const type = Math.random() > 0.5 ? 'barricade' : 'tree-pixel';
+        const b = scene.add.image(px, py, type).setDepth(type === 'tree-pixel' ? 25 : 5);
         scene.physics.add.existing(b, true);
         obstaclesGroup.add(b);
       }
     }
 
-    // Vehicles (Spawned safely on roads)
-    this.spawnVehicles(scene, validVehicleSpots, 8, 'BUS');
-    this.spawnVehicles(scene, validVehicleSpots, 15, 'RICKSHAW');
-    this.spawnVehicles(scene, validVehicleSpots, 12, 'TAXI');
-    this.spawnVehicles(scene, validVehicleSpots, 20, 'SCOOTER');
+    // Vehicles (Spawned safely on roads as obstacles)
+    this.spawnVehicles(scene, validVehicleSpots, 8, 'BUS', vehiclesGroup);
+    this.spawnVehicles(scene, validVehicleSpots, 15, 'RICKSHAW', vehiclesGroup);
+    this.spawnVehicles(scene, validVehicleSpots, 12, 'TAXI', vehiclesGroup);
+    this.spawnVehicles(scene, validVehicleSpots, 20, 'SCOOTER', vehiclesGroup);
 
     // Hazards
     for(let i=0; i<40; i++) {
@@ -92,16 +98,16 @@ export class MapGenerator {
 
     // Civilians
     const civSpawns = [
-      { x: 400, y: 400, type: 'NORMAL', label: 'Shopkeeper' }, // Market
-      { x: 1000, y: 800, type: 'CHILD', label: 'Child' }, // Market
-      { x: 600, y: 1600, type: 'ELDERLY', label: 'Resident' }, // Chawl
-      { x: 1200, y: 2000, type: 'NORMAL', label: 'Resident' }, // Chawl
-      { x: 2200, y: 500, type: 'NORMAL', label: 'Commuter' }, // Railway
-      { x: 2800, y: 800, type: 'INJURED', label: 'Commuter' }, // Railway
-      { x: 1550, y: 1200, type: 'NORMAL', label: 'Driver' }, // Main intersection
-      { x: 2000, y: 1800, type: 'INJURED', label: 'Worker' }, // Lowlands
-      { x: 2600, y: 2200, type: 'CHILD', label: 'Stranded Child' }, // Lowlands
-      { x: 2800, y: 1800, type: 'ELDERLY', label: 'Resident' }, // Lowlands
+      { x: 400, y: 400, type: 'NORMAL', label: 'Shopkeeper' }, 
+      { x: 1000, y: 800, type: 'CHILD', label: 'Child' },
+      { x: 600, y: 1600, type: 'ELDERLY', label: 'Resident' },
+      { x: 1200, y: 2000, type: 'NORMAL', label: 'Resident' },
+      { x: 2200, y: 500, type: 'NORMAL', label: 'Commuter' },
+      { x: 2800, y: 800, type: 'INJURED', label: 'Commuter' },
+      { x: 1550, y: 1200, type: 'NORMAL', label: 'Driver' },
+      { x: 2000, y: 1800, type: 'INJURED', label: 'Worker' },
+      { x: 2600, y: 2200, type: 'CHILD', label: 'Stranded Child' },
+      { x: 2800, y: 1800, type: 'ELDERLY', label: 'Resident' },
     ];
 
     civSpawns.forEach((c) => {
@@ -113,15 +119,16 @@ export class MapGenerator {
     return safeZoneObj;
   }
 
-  private static spawnVehicles(scene: Phaser.Scene, spots: {x: number, y: number}[], count: number, type: any) {
+  private static spawnVehicles(scene: Phaser.Scene, spots: {x: number, y: number}[], count: number, type: any, vehiclesGroup: Phaser.Physics.Arcade.StaticGroup) {
     for(let i=0; i<count; i++) {
       if (spots.length === 0) break;
       const index = Math.floor(Math.random() * spots.length);
       const spot = spots.splice(index, 1)[0];
       // Jitter a bit
-      const px = spot.x + (Math.random() * 40 - 20);
-      const py = spot.y + (Math.random() * 40 - 20);
-      new Vehicle(scene, px, py, type);
+      const px = spot.x + (Math.random() * 20 - 10);
+      const py = spot.y + (Math.random() * 20 - 10);
+      const v = new Vehicle(scene, px, py, type);
+      vehiclesGroup.add(v);
     }
   }
 
@@ -135,18 +142,22 @@ export class MapGenerator {
   }
 
   private static addBuilding(scene: Phaser.Scene, x: number, y: number, w: number, h: number, texture: string, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup) {
-    // We add an image. Origin is center.
     const cx = x + w / 2;
     const cy = y + h / 2;
-    const b = scene.add.image(cx, cy, texture).setDepth(4);
+    const b = scene.add.image(cx, cy, texture).setDepth(15); // Buildings overlap player
     
-    // Scale image to fit requested w/h if necessary, or just rely on asset sizes.
-    // Our assets are 128x128 for shop/res, 256x128 for chawl
     scene.physics.add.existing(b, true);
-    
-    // The visual physics body is exact
     const body = b.body as Phaser.Physics.Arcade.StaticBody;
-    body.setSize(w, h);
+    // Tweak body size to match the facade floor footprint (assume bottom 64px is solid)
+    if (texture === 'building-shop' || texture === 'building-res') {
+      body.setSize(w, h/2);
+      body.setOffset(0, h/2);
+    } else if (texture === 'building-chawl') {
+      body.setSize(w, 128);
+      body.setOffset(0, 64);
+    } else {
+      body.setSize(w, h);
+    }
     
     obstaclesGroup.add(b);
     this.geometry.buildings.push({ x, y, w, h });
@@ -154,7 +165,7 @@ export class MapGenerator {
 
   private static generateMarketDistrict(scene: Phaser.Scene, startX: number, startY: number, width: number, height: number, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup, doors: Door[], spots: {x:number,y:number}[]) {
     const blockSize = 128;
-    const roadWidth = 100;
+    const roadWidth = 80;
     
     for (let x = startX + roadWidth; x < startX + width - blockSize; x += blockSize + roadWidth) {
       for (let y = startY + roadWidth; y < startY + height - blockSize; y += blockSize + roadWidth) {
@@ -164,14 +175,12 @@ export class MapGenerator {
           doors.push(new Door(scene, x + 64, y + 128 + 20, 40, 20, `shop-${x}-${y}`, 'SHOP'));
         }
 
-        // Add street food carts on sidewalks (not inside building)
         if (Math.random() > 0.5) {
-          const cart = scene.add.image(x - 20, y + 64, 'food-cart').setDepth(4);
+          const cart = scene.add.image(x - 20, y + 64, 'food-cart').setDepth(14);
           scene.physics.add.existing(cart, true);
           obstaclesGroup.add(cart);
         }
 
-        // Add to valid vehicle parking spots (streets between blocks)
         spots.push({ x: x - roadWidth/2, y: y + blockSize/2 });
         spots.push({ x: x + blockSize/2, y: y - roadWidth/2 });
       }
@@ -180,7 +189,7 @@ export class MapGenerator {
 
   private static generateResidentialDistrict(scene: Phaser.Scene, startX: number, startY: number, width: number, height: number, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup, doors: Door[], spots: {x:number,y:number}[]) {
     const chawlWidth = 256;
-    const chawlHeight = 128;
+    const chawlHeight = 192;
     const passage = 80; 
 
     for (let y = startY + passage; y < startY + height - chawlHeight; y += chawlHeight + passage) {
@@ -192,7 +201,7 @@ export class MapGenerator {
         }
 
         if (Math.random() > 0.3) {
-          const light = scene.add.image(x - 20, y, 'street-light').setDepth(6);
+          const light = scene.add.image(x - 20, y + 100, 'street-light').setDepth(16);
           scene.physics.add.existing(light, true);
           obstaclesGroup.add(light);
         }
@@ -204,20 +213,16 @@ export class MapGenerator {
 
   private static generateRailwayDistrict(scene: Phaser.Scene, startX: number, startY: number, width: number, _height: number, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup) {
     for (let x = startX + 100; x < startX + width - 256; x += 256) {
-      // Platform 1
       this.addBuilding(scene, x, startY + 200, 256, 128, 'railway-platform', obstaclesGroup);
-      // Platform 2
       this.addBuilding(scene, x, startY + 600, 256, 128, 'railway-platform', obstaclesGroup);
     }
   }
 
   private static generateLowlands(scene: Phaser.Scene, startX: number, startY: number, width: number, height: number, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup, doors: Door[], spots: {x:number,y:number}[]) {
-    // Scattered irregular shanties
     for (let i = 0; i < 25; i++) {
       const px = startX + 100 + Math.random() * (width - 300);
       const py = startY + 100 + Math.random() * (height - 300);
       
-      // Avoid overlap
       if (!this.isInsideBuilding(px, py) && !this.isInsideBuilding(px+128, py+128)) {
         this.addBuilding(scene, px, py, 128, 128, 'building-res', obstaclesGroup);
         if (Math.random() > 0.5) {
