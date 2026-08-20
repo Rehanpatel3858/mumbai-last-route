@@ -135,10 +135,21 @@ export class MapGenerator {
       if (spots.length === 0) break;
       const index = Math.floor(Math.random() * spots.length);
       const spot = spots.splice(index, 1)[0];
-      // Jitter a bit
+      
       const px = spot.x + (Math.random() * 20 - 10);
       const py = spot.y + (Math.random() * 20 - 10);
-      const v = new Vehicle(scene, px, py, type);
+      
+      // Introduce varied vehicles
+      let finalType = type;
+      if (type === 'vehicle-car') {
+         const r = Math.random();
+         if (r < 0.4) finalType = 'auto-rickshaw';
+         else if (r < 0.8) finalType = 'car-white';
+         else finalType = 'bus-red';
+      }
+
+      const v = new Vehicle(scene, px, py, finalType);
+      v.setDepth(12); // Above flood
       vehiclesGroup.add(v);
     }
   }

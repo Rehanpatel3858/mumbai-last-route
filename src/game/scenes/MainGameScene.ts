@@ -107,11 +107,17 @@ export class MainGameScene extends Phaser.Scene {
     this.player = new Player(this, 1600, 2000);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.cameras.main.setZoom(1.8); // Much closer, pixel-art RPG style
+    this.cameras.main.setFollowOffset(0, 30); // Pseudo-isometric vertical tilt offset
 
     this.createRainEffect(mapWidth);
 
+    // Dynamic Road Base
+    const roadBase = this.add.tileSprite(0, 0, mapWidth, mapHeight, 'road-texture');
+    roadBase.setOrigin(0, 0);
+    roadBase.setDepth(0); // Very bottom
+
     // Dynamic Physical Flood Water Layer
-    this.floodWater = this.add.tileSprite(0, 0, mapWidth, mapHeight, 'water-anim');
+    this.floodWater = this.add.tileSprite(0, 0, mapWidth, mapHeight, 'water-texture');
     this.floodWater.setOrigin(0, 0);
     this.floodWater.setDepth(1); // Above roads (0), below player (10) and buildings (15)
     this.floodWater.setAlpha(0);
@@ -299,24 +305,50 @@ export class MainGameScene extends Phaser.Scene {
   }
 
   private createRainEffect(mapWidth: number) {
-    const mapHeight = 2400;
-
-    // Fast moving rain streaks
-    const rainParticles = this.add.particles(0, 0, 'debris-pixel', {
+    // Background Rain (slow, small)
+    this.add.particles(0, 0, 'debris-pixel', {
       x: { min: 0, max: mapWidth },
-      y: { min: 0, max: mapHeight },
-      quantity: 12,
-      lifespan: 600,
-      speedY: { min: 800, max: 1200 },
-      speedX: { min: -100, max: -200 },
-      scale: { start: 0.8, end: 0.2 },
-      alpha: { start: 0.6, end: 0 },
-      tint: 0x94a3b8,
-      blendMode: 'ADD'
+      y: 0,
+      lifespan: 1500,
+      speedY: { min: 400, max: 600 },
+      speedX: { min: -100, max: -50 },
+      scale: { start: 0.1, end: 0.2 },
+      quantity: 10,
+      blendMode: 'ADD',
+      alpha: 0.2,
+      depth: 2
     });
-    rainParticles.setDepth(20);
+
+    // Midground Rain
+    this.add.particles(0, 0, 'debris-pixel', {
+      x: { min: 0, max: mapWidth },
+      y: 0,
+      lifespan: 1000,
+      speedY: { min: 700, max: 900 },
+      speedX: { min: -150, max: -100 },
+      scale: { start: 0.2, end: 0.4 },
+      quantity: 15,
+      blendMode: 'ADD',
+      alpha: 0.4,
+      depth: 18
+    });
+
+    // Foreground Rain (fast, large)
+    this.rainParticles = this.add.particles(0, 0, 'debris-pixel', {
+      x: { min: 0, max: mapWidth },
+      y: 0,
+      lifespan: 800,
+      speedY: { min: 1000, max: 1300 },
+      speedX: { min: -200, max: -150 },
+      scale: { start: 0.4, end: 0.8 },
+      quantity: 5,
+      blendMode: 'ADD',
+      alpha: 0.5,
+      depth: 30
+    });
 
     // Water Splash Ripples (Rain hitting the flood water)
+    const mapHeight = 2400;
     const splashParticles = this.add.particles(0, 0, 'debris-pixel', {
       x: { min: 0, max: mapWidth },
       y: { min: 0, max: mapHeight },

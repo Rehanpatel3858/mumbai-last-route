@@ -22,10 +22,10 @@ export interface Mission {
 
 export const MISSIONS: Mission[] = [
   {
-    id: 'mission-01',
+    id: 'hindmata-01',
     code: 'OPS-HINDMATA-01',
-    name: 'Operation Hindmata Evacuation',
-    location: 'Hindmata Lowland Sector to Dadar Flyover Safe Zone',
+    name: 'Operation Evacuation',
+    location: 'Hindmata Market Sector to Dadar Flyover Safe Zone',
     difficulty: 'MODERATE',
     durationSeconds: 390, // 6 minutes 30 seconds
     targetCivilians: 10,
