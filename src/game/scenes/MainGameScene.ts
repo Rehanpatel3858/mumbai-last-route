@@ -306,7 +306,7 @@ export class MainGameScene extends Phaser.Scene {
 
   private createRainEffect(mapWidth: number) {
     // Background Rain (slow, small)
-    this.add.particles(0, 0, 'debris-pixel', {
+    const bgRain = this.add.particles(0, 0, 'debris-pixel', {
       x: { min: 0, max: mapWidth },
       y: 0,
       lifespan: 1500,
@@ -315,12 +315,12 @@ export class MainGameScene extends Phaser.Scene {
       scale: { start: 0.1, end: 0.2 },
       quantity: 10,
       blendMode: 'ADD',
-      alpha: 0.2,
-      depth: 2
+      alpha: 0.2
     });
+    bgRain.setDepth(2);
 
     // Midground Rain
-    this.add.particles(0, 0, 'debris-pixel', {
+    const midRain = this.add.particles(0, 0, 'debris-pixel', {
       x: { min: 0, max: mapWidth },
       y: 0,
       lifespan: 1000,
@@ -329,12 +329,12 @@ export class MainGameScene extends Phaser.Scene {
       scale: { start: 0.2, end: 0.4 },
       quantity: 15,
       blendMode: 'ADD',
-      alpha: 0.4,
-      depth: 18
+      alpha: 0.4
     });
+    midRain.setDepth(18);
 
     // Foreground Rain (fast, large)
-    this.rainParticles = this.add.particles(0, 0, 'debris-pixel', {
+    const fgRain = this.add.particles(0, 0, 'debris-pixel', {
       x: { min: 0, max: mapWidth },
       y: 0,
       lifespan: 800,
@@ -343,9 +343,9 @@ export class MainGameScene extends Phaser.Scene {
       scale: { start: 0.4, end: 0.8 },
       quantity: 5,
       blendMode: 'ADD',
-      alpha: 0.5,
-      depth: 30
+      alpha: 0.5
     });
+    fgRain.setDepth(30);
 
     // Water Splash Ripples (Rain hitting the flood water)
     const mapHeight = 2400;

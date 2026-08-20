@@ -13,21 +13,6 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     canvas.refresh();
   };
 
-  // Helper for drawing 2.5D boxes (buildings/vehicles)
-  const drawBox = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, depth: number, topColor: string, frontColor: string, sideColor?: string) => {
-    // Front face
-    ctx.fillStyle = frontColor;
-    ctx.fillRect(x, y, w, h);
-    // Top face
-    ctx.fillStyle = topColor;
-    ctx.fillRect(x, y - depth, w, depth);
-    // Side face (optional, if angled)
-    if (sideColor) {
-      ctx.fillStyle = sideColor;
-      ctx.fillRect(x + w, y - depth, depth * 0.5, h + depth);
-    }
-  };
-
   // 1. PLAYER SPRITESHEET (128x32 - 4 directions: Down, Up, Left, Right; 32x32 per frame)
   // HIGH QUALITY 2.5D RESCUE WORKER
   createPixelCanvas('player-pixel', 128, 32, (ctx) => {
