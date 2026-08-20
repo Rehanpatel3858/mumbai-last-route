@@ -238,7 +238,7 @@ export class MainGameScene extends Phaser.Scene {
     if (this.isPaused) return;
 
     const currentPhase = FLOOD_PHASES[this.currentPhaseIndex];
-    this.player.updateControls(this.wasd, this.cursors, currentPhase.speedMultiplier);
+    this.player.updateControls(this.wasd, this.cursors, currentPhase.speedPenalty);
 
     // Water flooding overlay logic
     this.waterAnimTimer += delta;
@@ -321,10 +321,10 @@ export class MainGameScene extends Phaser.Scene {
     this.timerEvent.paused = true;
     
     const s = calculateScore(
-      victory,
       this.rescuedCivilians.length,
       this.totalCivilians,
-      this.totalDurationSeconds - this.timeRemainingSeconds,
+      this.timeRemainingSeconds,
+      this.player.health,
       this.hazardHits
     );
     this.eventsBridge.onGameOver(victory, s);

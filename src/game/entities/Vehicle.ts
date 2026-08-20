@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-export type VehicleType = 'BUS' | 'RICKSHAW';
+export type VehicleType = 'BUS' | 'RICKSHAW' | 'CAR';
 
 export class Vehicle extends Phaser.Physics.Arcade.Sprite {
   public vehicleType: VehicleType;

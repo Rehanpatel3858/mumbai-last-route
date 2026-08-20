@@ -132,6 +132,10 @@ class SoundSynth {
     osc.stop(now + 0.15);
   }
 
+  public playDamage() {
+    this.playZap();
+  }
+
   public playVictory() {
     if (this.isMuted) return;
     this.initCtx();

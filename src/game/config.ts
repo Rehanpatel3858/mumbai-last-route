@@ -1,6 +1,4 @@
 import Phaser from 'phaser';
-import { BootScene } from './scenes/BootScene';
-import { MainGameScene } from './scenes/MainGameScene';
 
 export function createGameConfig(containerId: string): Phaser.Types.Core.GameConfig {
   return {
