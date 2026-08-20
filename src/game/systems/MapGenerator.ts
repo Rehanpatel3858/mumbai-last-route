@@ -145,7 +145,7 @@ export class MapGenerator {
     return false;
   }
 
-  private static addBuilding(scene: Phaser.Scene, x: number, y: number, w: number, h: number, texture: string, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup) {
+  private static addBuilding(_scene: Phaser.Scene, x: number, y: number, w: number, h: number, texture: string, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup) {
     const cx = x + w / 2;
     const cy = y + h / 2;
     
