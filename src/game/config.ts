@@ -24,6 +24,5 @@ export function createGameConfig(containerId: string): Phaser.Types.Core.GameCon
         debug: false,
       },
     },
-    scene: [BootScene, MainGameScene],
   };
 }

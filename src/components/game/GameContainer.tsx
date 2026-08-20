@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { createGameConfig } from '../../game/config';
 import type { GameBridgeEvents } from '../../game/scenes/MainGameScene';
+import { BootScene } from '../../game/scenes/BootScene';
+import { MainGameScene } from '../../game/scenes/MainGameScene';
 import { FLOOD_PHASES, type FloodPhase } from '../../game/systems/FloodSystem';
 import type { ScoreBreakdown } from '../../game/systems/ScoreSystem';
 import { useGameState } from '../../context/GameStateContext';
@@ -53,6 +55,8 @@ export const GameContainer: React.FC = () => {
     const game = new Phaser.Game(config);
     gameRef.current = game;
 
+    game.scene.add('BootScene', BootScene);
+    game.scene.add('MainGameScene', MainGameScene);
     game.scene.start('BootScene', { eventsBridge: bridgeEvents });
 
     return () => {
@@ -87,8 +91,8 @@ export const GameContainer: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-full bg-black overflow-hidden" style={{ flex: 1 }}>
-      <div id="phaser-game-container" ref={containerRef} className="absolute inset-0 w-full h-full" />
+    <div style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'black', overflow: 'hidden', flex: 1 }}>
+      <div id="phaser-game-container" ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' }} />
 
       <GameHUD
         timeRemainingSeconds={timeRemaining}
