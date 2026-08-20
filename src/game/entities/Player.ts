@@ -1,0 +1,99 @@
+import Phaser from 'phaser';
+
+export class Player extends Phaser.Physics.Arcade.Sprite {
+  public health: number = 100;
+  public flashlightGraphics: Phaser.GameObjects.Graphics;
+  public positionHistory: { x: number; y: number }[] = [];
+  public currentDirection: 'down' | 'up' | 'left' | 'right' = 'down';
+
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    super(scene, x, y, 'player-pixel');
+    scene.add.existing(this);
+    scene.physics.add.existing(this);
+
+    this.setCollideWorldBounds(true);
+    this.setDepth(10);
+    this.body?.setSize(20, 24);
+    this.setScale(1.2);
+
+    this.flashlightGraphics = scene.add.graphics();
+    this.flashlightGraphics.setDepth(15);
+  }
+
+  public updateControls(
+    wasd: {
+      W: Phaser.Input.Keyboard.Key;
+      A: Phaser.Input.Keyboard.Key;
+      S: Phaser.Input.Keyboard.Key;
+      D: Phaser.Input.Keyboard.Key;
+    },
+    cursors: Phaser.Types.Input.Keyboard.CursorKeys,
+    speedMultiplier: number
+  ) {
+    let baseSpeed = 160 * speedMultiplier;
+    let vx = 0;
+    let vy = 0;
+
+    if (wasd.A.isDown || cursors.left?.isDown) {
+      vx -= baseSpeed;
+      this.currentDirection = 'left';
+    } else if (wasd.D.isDown || cursors.right?.isDown) {
+      vx += baseSpeed;
+      this.currentDirection = 'right';
+    }
+
+    if (wasd.W.isDown || cursors.up?.isDown) {
+      vy -= baseSpeed;
+      this.currentDirection = 'up';
+    } else if (wasd.S.isDown || cursors.down?.isDown) {
+      vy += baseSpeed;
+      this.currentDirection = 'down';
+    }
+
+    this.setVelocity(vx, vy);
+
+    if (vx !== 0 || vy !== 0) {
+      this.anims.play(`player-walk-${this.currentDirection}`, true);
+      this.positionHistory.unshift({ x: this.x, y: this.y });
+      if (this.positionHistory.length > 600) {
+        this.positionHistory.pop();
+      }
+    } else {
+      this.anims.stop();
+      // Set to idle frame for the current direction
+      if (this.currentDirection === 'down') this.setFrame(0);
+      else if (this.currentDirection === 'up') this.setFrame(1);
+      else if (this.currentDirection === 'left') this.setFrame(2);
+      else if (this.currentDirection === 'right') this.setFrame(3);
+    }
+
+    this.drawFlashlight();
+  }
+
+  private drawFlashlight() {
+    this.flashlightGraphics.clear();
+    const px = this.x;
+    const py = this.y;
+
+    let startAngle = Math.PI / 2 - 0.4;
+    let endAngle = Math.PI / 2 + 0.4;
+
+    if (this.currentDirection === 'up') {
+      startAngle = -Math.PI / 2 - 0.4;
+      endAngle = -Math.PI / 2 + 0.4;
+    } else if (this.currentDirection === 'left') {
+      startAngle = Math.PI - 0.4;
+      endAngle = Math.PI + 0.4;
+    } else if (this.currentDirection === 'right') {
+      startAngle = -0.4;
+      endAngle = 0.4;
+    }
+
+    this.flashlightGraphics.fillStyle(0x00f0ff, 0.14);
+    this.flashlightGraphics.beginPath();
+    this.flashlightGraphics.moveTo(px, py);
+    this.flashlightGraphics.arc(px, py, 200, startAngle, endAngle, false);
+    this.flashlightGraphics.closePath();
+    this.flashlightGraphics.fill();
+  }
+}
