@@ -766,38 +766,87 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     ctx.fillRect(23, 16, 2, 16);
     // Cart Body (Wooden)
   // 2. PLAYER & NPCs
-  // 2.5D Player (Head, shoulders, backpack)
-  createPixelCanvas('player-pixel', 32, 32, (ctx) => {
-    // shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.beginPath(); ctx.ellipse(16, 28, 10, 4, 0, 0, Math.PI * 2); ctx.fill();
-    
-    // Backpack
-    ctx.fillStyle = '#b45309';
-    ctx.fillRect(8, 12, 16, 12);
-    ctx.fillStyle = '#f59e0b'; // bag highlight
-    ctx.fillRect(8, 12, 16, 2);
+  // 2.5D Player (Head, shoulders, backpack) - 96x128 spritesheet (3 frames wide x 4 directions tall, 32x32 each)
+  createPixelCanvas('player-pixel', 96, 128, (ctx) => {
+    const drawPlayerFrame = (fx: number, fy: number, dir: 'down'|'up'|'left'|'right', isWalking: boolean, legState: number) => {
+      const px = fx * 32;
+      const py = fy * 32;
+      
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.beginPath(); ctx.ellipse(px + 16, py + 28, 10, 4, 0, 0, Math.PI * 2); ctx.fill();
 
-    // Torso (Raincoat)
-    ctx.fillStyle = '#ea580c';
-    ctx.fillRect(10, 14, 12, 10);
+      // Legs (Walking animation)
+      ctx.fillStyle = '#0f172a'; // dark pants/boots
+      if (isWalking) {
+        if (legState === 1) { // Left leg forward
+          ctx.fillRect(px + 12, py + 24, 4, 6);
+          ctx.fillRect(px + 18, py + 22, 4, 6);
+        } else { // Right leg forward
+          ctx.fillRect(px + 10, py + 22, 4, 6);
+          ctx.fillRect(px + 16, py + 24, 4, 6);
+        }
+      } else {
+        ctx.fillRect(px + 12, py + 24, 4, 6);
+        ctx.fillRect(px + 16, py + 24, 4, 6);
+      }
 
-    // Head
-    ctx.fillStyle = '#fcd34d'; // skin
-    ctx.beginPath(); ctx.arc(16, 10, 6, 0, Math.PI * 2); ctx.fill();
-    // Hair
-    ctx.fillStyle = '#0f172a';
-    ctx.beginPath(); ctx.arc(16, 8, 6, 0, Math.PI, true); ctx.fill();
+      // Backpack (drawn before torso if facing up or side)
+      if (dir === 'up' || dir === 'left' || dir === 'right') {
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(px + 8, py + 12, 16, 12);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(px + 8, py + 12, 16, 2);
+      }
 
-    // Flashlight
-    ctx.fillStyle = '#334155';
-    ctx.fillRect(22, 16, 4, 6);
-    ctx.fillStyle = '#fef08a';
-    ctx.fillRect(23, 22, 2, 2);
+      // Torso (Raincoat)
+      ctx.fillStyle = '#ea580c';
+      ctx.fillRect(px + 10, py + 14, 12, 10);
+      
+      // Backpack (drawn after torso if facing down)
+      if (dir === 'down') {
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(px + 8, py + 12, 16, 12);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(px + 8, py + 12, 16, 2);
+      }
+
+      // Head
+      ctx.fillStyle = '#fcd34d'; // skin
+      ctx.beginPath(); ctx.arc(px + 16, py + 10, 6, 0, Math.PI * 2); ctx.fill();
+      // Hair
+      ctx.fillStyle = '#0f172a';
+      if (dir === 'up') {
+        ctx.beginPath(); ctx.arc(px + 16, py + 10, 6, 0, Math.PI * 2); ctx.fill();
+      } else if (dir === 'left') {
+        ctx.fillRect(px + 10, py + 4, 6, 10);
+      } else if (dir === 'right') {
+        ctx.fillRect(px + 16, py + 4, 6, 10);
+      } else {
+        ctx.beginPath(); ctx.arc(px + 16, py + 8, 6, 0, Math.PI, true); ctx.fill();
+      }
+
+      // Flashlight (Only visible if facing down or side)
+      if (dir !== 'up') {
+        const lx = dir === 'left' ? px + 8 : px + 22;
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(lx, py + 16, 4, 6);
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(lx + 1, py + 22, 2, 2);
+      }
+    };
+
+    // Draw grid of frames
+    const dirs: ('down'|'up'|'left'|'right')[] = ['down', 'up', 'left', 'right'];
+    dirs.forEach((dir, row) => {
+      drawPlayerFrame(0, row, dir, false, 0); // Idle
+      drawPlayerFrame(1, row, dir, true, 1);  // Walk 1
+      drawPlayerFrame(2, row, dir, true, 2);  // Walk 2
+    });
   });
 
   // 2.5D Civilians
-  const createCivilian25D = (id: string, color: string, skin: string) => {
+  const createCivilian25D = (id: string, color: string, skin: string, hasUmbrella: boolean, hasBag: boolean) => {
     createPixelCanvas(id, 32, 32, (ctx) => {
       // shadow
       ctx.fillStyle = 'rgba(0,0,0,0.4)';
@@ -806,20 +855,48 @@ export function generatePixelTextures(scene: Phaser.Scene) {
       // Torso
       ctx.fillStyle = color;
       ctx.fillRect(11, 14, 10, 10);
+      ctx.fillStyle = 'rgba(0,0,0,0.2)'; // wet/shadow
+      ctx.fillRect(11, 20, 10, 4);
+
+      // Legs
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(12, 24, 3, 4);
+      ctx.fillRect(17, 24, 3, 4);
       
       // Head
       ctx.fillStyle = skin;
       ctx.beginPath(); ctx.arc(16, 10, 5, 0, Math.PI * 2); ctx.fill();
+      
       // Hair
-      ctx.fillStyle = '#475569';
-      ctx.beginPath(); ctx.arc(16, 8, 5, 0, Math.PI, true); ctx.fill();
+      ctx.fillStyle = '#1e293b';
+      if (!hasUmbrella) {
+        ctx.beginPath(); ctx.arc(16, 8, 5, 0, Math.PI, true); ctx.fill();
+      }
+
+      // Bag
+      if (hasBag) {
+        ctx.fillStyle = '#78350f'; // brown bag
+        ctx.fillRect(6, 16, 6, 8);
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(6, 16, 6, 2);
+      }
+
+      // Umbrella
+      if (hasUmbrella) {
+        ctx.fillStyle = '#0f172a'; // stick
+        ctx.fillRect(18, 12, 2, 10);
+        ctx.fillStyle = '#ef4444'; // red umbrella
+        ctx.beginPath(); ctx.arc(16, 6, 12, Math.PI, 0); ctx.fill();
+        ctx.fillStyle = '#fca5a5'; // highlight
+        ctx.fillRect(8, 2, 16, 2);
+      }
     });
   };
 
-  createCivilian25D('civilian-normal', '#3b82f6', '#fcd34d');
-  createCivilian25D('civilian-child', '#22c55e', '#fde68a');
-  createCivilian25D('civilian-injured', '#ef4444', '#f87171');
-  createCivilian25D('civilian-elderly', '#a855f7', '#d1d5db');
+  createCivilian25D('civilian-normal', '#3b82f6', '#fcd34d', true, false);
+  createCivilian25D('civilian-child', '#22c55e', '#fde68a', false, true);
+  createCivilian25D('civilian-injured', '#ef4444', '#f87171', false, false);
+  createCivilian25D('civilian-elderly', '#a855f7', '#d1d5db', true, true);
 
   // 3. INTERACTABLES
   createPixelCanvas('door-pixel', 32, 48, (ctx) => {

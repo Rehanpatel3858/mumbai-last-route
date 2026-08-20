@@ -138,6 +138,7 @@ export class MainGameScene extends Phaser.Scene {
         F: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F),
         M: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M),
         ESC: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
+        ENTER: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
       };
     }
 
@@ -174,10 +175,12 @@ export class MainGameScene extends Phaser.Scene {
 
     // Mobile Action Listeners
     window.addEventListener('mobile-action-rescue', this.handleMobileRescue.bind(this));
+    window.addEventListener('mobile-action-enter', this.handleMobileEnter.bind(this));
     window.addEventListener('mobile-action-map', this.handleMobileMap.bind(this));
     window.addEventListener('mobile-action-pause', this.handleMobilePause.bind(this));
     this.events.on('destroy', () => {
       window.removeEventListener('mobile-action-rescue', this.handleMobileRescue.bind(this));
+      window.removeEventListener('mobile-action-enter', this.handleMobileEnter.bind(this));
       window.removeEventListener('mobile-action-map', this.handleMobileMap.bind(this));
       window.removeEventListener('mobile-action-pause', this.handleMobilePause.bind(this));
     });
@@ -230,6 +233,31 @@ export class MainGameScene extends Phaser.Scene {
       this.rescuedCivilians.push(closestCivilian);
       this.eventsBridge.onCiviliansUpdate(this.rescuedCivilians.length, this.totalCivilians);
       soundSynth.playRescue();
+    }
+  };
+
+  private handleMobileEnter = () => {
+    if (this.isGameOver || this.isPaused) return;
+    const px = this.player.x;
+    const py = this.player.y;
+    let closestDoor: Door | null = null;
+    let minDoorDist = 60;
+
+    for (const d of this.doors) {
+      const dist = Phaser.Math.Distance.Between(px, py, d.x, d.y);
+      if (dist < minDoorDist) {
+        minDoorDist = dist;
+        closestDoor = d;
+      }
+    }
+
+    if (closestDoor) {
+      this.scene.pause();
+      this.scene.launch('InteriorScene', { 
+        type: closestDoor.destScene, 
+        playerX: px, 
+        playerY: py 
+      });
     }
   };
 
@@ -404,7 +432,7 @@ export class MainGameScene extends Phaser.Scene {
       }
     } else if (activeInteractable === 'DOOR' && closestDoor) {
       closestDoor['promptText'].setVisible(true);
-      if (Phaser.Input.Keyboard.JustDown(this.wasd.F)) {
+      if (Phaser.Input.Keyboard.JustDown(this.wasd.ENTER)) {
         this.scene.pause();
         this.scene.launch('InteriorScene', { 
           type: closestDoor.destScene, 

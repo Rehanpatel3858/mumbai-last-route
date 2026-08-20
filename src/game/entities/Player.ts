@@ -32,7 +32,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     speedMultiplier: number,
     joystickVector?: Phaser.Math.Vector2
   ) {
-    let baseSpeed = 100 * speedMultiplier; // Reduced from 160 to 100
+    let baseSpeed = 70 * speedMultiplier; // Reduced from 100 to 70 for tactical movement
     let vx = 0;
     let vy = 0;
 
@@ -72,7 +72,29 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setVelocity(vx, vy);
 
+    // Water Splash Particle Emitter when moving
     if (vx !== 0 || vy !== 0) {
+      if (!this.getData('splashEmitter')) {
+        const particles = this.scene.add.particles(0, 0, 'rain-particle', {
+          lifespan: 300,
+          speed: { min: 10, max: 30 },
+          scale: { start: 0.8, end: 0 },
+          alpha: { start: 0.6, end: 0 },
+          blendMode: 'ADD',
+          emitting: false,
+        });
+        particles.setDepth(this.depth - 1);
+        this.setData('splashEmitter', particles);
+      }
+      
+      const emitter = this.getData('splashEmitter') as Phaser.GameObjects.Particles.ParticleEmitter;
+      emitter.setPosition(this.x, this.y + 12);
+      // Only emit if moving and flood level is high enough (e.g. game phase > 0)
+      const scene = this.scene as any;
+      if (scene.currentPhaseIndex && scene.currentPhaseIndex > 0) {
+        emitter.emitParticleAt(this.x, this.y + 12, 1);
+      }
+
       this.anims.play(`player-walk-${this.currentDirection}`, true);
       this.positionHistory.unshift({ x: this.x, y: this.y });
       if (this.positionHistory.length > 600) {
@@ -81,10 +103,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     } else {
       this.anims.stop();
       // Set to idle frame for the current direction
-      if (this.currentDirection === 'down') this.setFrame(0);
-      else if (this.currentDirection === 'up') this.setFrame(1);
-      else if (this.currentDirection === 'left') this.setFrame(2);
-      else if (this.currentDirection === 'right') this.setFrame(3);
+      if (this.currentDirection === 'down') this.setFrame('f_0_0');
+      else if (this.currentDirection === 'up') this.setFrame('f_1_0');
+      else if (this.currentDirection === 'left') this.setFrame('f_2_0');
+      else if (this.currentDirection === 'right') this.setFrame('f_3_0');
     }
 
     this.drawFlashlight();

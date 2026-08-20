@@ -148,11 +148,12 @@ export class MapGenerator {
   private static addBuilding(scene: Phaser.Scene, x: number, y: number, w: number, h: number, texture: string, obstaclesGroup: Phaser.Physics.Arcade.StaticGroup) {
     const cx = x + w / 2;
     const cy = y + h / 2;
-    const b = scene.add.image(cx, cy, texture).setDepth(15); // Buildings overlap player
     
-    scene.physics.add.existing(b, true);
+    // Create the building directly inside the physics group
+    const b = obstaclesGroup.create(cx, cy, texture).setDepth(15);
     const body = b.body as Phaser.Physics.Arcade.StaticBody;
-    // Tweak body size to match the facade floor footprint (assume bottom 64px is solid)
+    
+    // Tweak body size to match the facade floor footprint (assume bottom half or bottom 64px is solid)
     if (texture === 'building-shop' || texture === 'building-res') {
       body.setSize(w, h/2);
       body.setOffset(0, h/2);
@@ -163,7 +164,9 @@ export class MapGenerator {
       body.setSize(w, h);
     }
     
-    obstaclesGroup.add(b);
+    // Crucial: Update the static body's position based on the new size and offset!
+    body.updateFromGameObject();
+
     this.geometry.buildings.push({ x, y, w, h });
   }
 
