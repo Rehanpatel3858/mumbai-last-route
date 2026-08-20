@@ -119,11 +119,11 @@ export class MainGameScene extends Phaser.Scene {
     this.waterOverlayGraphics = this.add.graphics();
     this.waterOverlayGraphics.setDepth(20); // Above ground, below UI
 
-    // Stormy Darkness Overlay (Classic Multiply Blend)
-    const darkness = this.add.rectangle(0, 0, mapWidth, mapHeight, 0x000b18, 0.75);
+    // Stormy Darkness Overlay (Fixed to not crush world visibility)
+    const darkness = this.add.rectangle(0, 0, mapWidth, mapHeight, 0x0f172a, 0.7);
     darkness.setOrigin(0, 0);
     darkness.setDepth(22);
-    darkness.setBlendMode(Phaser.BlendModes.MULTIPLY);
+    darkness.setBlendMode(Phaser.BlendModes.NORMAL);
 
     if (this.input.keyboard) {
       // Remove old listener if any

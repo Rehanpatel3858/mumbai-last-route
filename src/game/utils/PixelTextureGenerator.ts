@@ -284,40 +284,46 @@ export function generatePixelTextures(scene: Phaser.Scene) {
   createPixelCanvas('road-tile', 64, 64, (ctx) => {
     ctx.fillStyle = '#1e293b'; // dark asphalt
     ctx.fillRect(0, 0, 64, 64);
+    // Mud and dirt patches
+    ctx.fillStyle = '#3f271d'; // dark wet mud
+    for(let i=0; i<8; i++) ctx.fillRect(Math.random()*64, Math.random()*64, Math.random()*16+8, Math.random()*8+4);
     // Cracks / texture (NO CIRCLES)
     ctx.fillStyle = '#0f172a';
-    for(let i=0; i<30; i++) {
-      ctx.fillRect(Math.random()*64, Math.random()*64, Math.random()*4+2, Math.random()*2+1);
+    for(let i=0; i<40; i++) {
+      ctx.fillRect(Math.random()*64, Math.random()*64, Math.random()*6+2, Math.random()*2+1);
     }
-    // Minor lighter pebbles
-    ctx.fillStyle = '#334155';
-    for(let i=0; i<15; i++) {
-      ctx.fillRect(Math.random()*64, Math.random()*64, 2, 2);
-    }
+    // Minor lighter pebbles / garbage
+    ctx.fillStyle = '#475569';
+    for(let i=0; i<20; i++) ctx.fillRect(Math.random()*64, Math.random()*64, 2, 2);
+    ctx.fillStyle = '#e2e8f0'; // white paper litter
+    for(let i=0; i<2; i++) ctx.fillRect(Math.random()*64, Math.random()*64, 3, 2);
   });
 
   createPixelCanvas('road-line-v', 64, 64, (ctx) => {
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, 64, 64); // asphalt base
-    ctx.fillStyle = '#facc15'; // yellow dashed line
-    ctx.fillRect(30, 0, 4, 24);
-    ctx.fillRect(30, 40, 4, 24);
+    ctx.fillStyle = 'rgba(0,0,0,0)'; // transparent base so it overlays road
+    ctx.fillRect(0, 0, 64, 64);
+    ctx.fillStyle = 'rgba(250, 204, 21, 0.7)'; // faded yellow dashed line
+    ctx.fillRect(30, 0, 4, 20);
+    ctx.fillRect(30, 36, 4, 20);
   });
 
   createPixelCanvas('road-line-h', 64, 64, (ctx) => {
-    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, 64, 64); // asphalt base
-    ctx.fillStyle = '#facc15'; // yellow dashed line
-    ctx.fillRect(0, 30, 24, 4);
-    ctx.fillRect(40, 30, 24, 4);
+    ctx.fillStyle = 'rgba(0,0,0,0)'; 
+    ctx.fillRect(0, 0, 64, 64);
+    ctx.fillStyle = 'rgba(250, 204, 21, 0.7)';
+    ctx.fillRect(0, 30, 20, 4);
+    ctx.fillRect(36, 30, 20, 4);
   });
 
   createPixelCanvas('sidewalk-tile', 64, 64, (ctx) => {
     ctx.fillStyle = '#64748b'; // concrete
     ctx.fillRect(0, 0, 64, 64);
     ctx.fillStyle = '#475569'; // pavement lines
-    ctx.fillRect(0, 0, 64, 2);
-    ctx.fillRect(0, 32, 64, 2);
-    ctx.fillRect(0, 0, 2, 64);
-    ctx.fillRect(32, 0, 2, 64);
+    ctx.fillRect(0, 0, 64, 2); ctx.fillRect(0, 32, 64, 2);
+    ctx.fillRect(0, 0, 2, 64); ctx.fillRect(32, 0, 2, 64);
+    // Mud on sidewalk
+    ctx.fillStyle = '#3f271d';
+    ctx.fillRect(10, 10, 12, 6); ctx.fillRect(40, 40, 16, 8);
     // Curb edge (bottom)
     ctx.fillStyle = '#facc15'; // yellow curb
     ctx.fillRect(0, 58, 64, 6);
@@ -328,114 +334,167 @@ export function generatePixelTextures(scene: Phaser.Scene) {
   createPixelCanvas('water-anim', 256, 64, (ctx) => {
     for (let f = 0; f < 4; f++) {
       const oX = f * 64;
-      ctx.fillStyle = 'rgba(12, 74, 110, 0.7)'; // dark flood water
+      ctx.fillStyle = 'rgba(12, 74, 110, 0.85)'; // extremely deep blue/teal
       ctx.fillRect(oX, 0, 64, 64);
       
-      // Moving ripples
+      // Moving wave highlights
       ctx.fillStyle = 'rgba(56, 189, 248, 0.4)'; // cyan ripples
-      const s = f * 4;
-      ctx.fillRect(oX + ((10 + s) % 64), 16, 16, 2);
-      ctx.fillRect(oX + ((40 + s) % 64), 32, 24, 2);
-      ctx.fillRect(oX + ((20 + s) % 64), 48, 12, 2);
+      const s = f * 8;
+      
+      // Long sweeping wave lines
+      ctx.fillRect(oX + ((10 + s) % 64), 16, 24, 2);
+      ctx.fillRect(oX + ((40 + s) % 64), 32, 32, 2);
+      ctx.fillRect(oX + ((5 + s) % 64), 48, 16, 2);
+      
+      // Small turbulent ripples
+      ctx.fillStyle = 'rgba(125, 211, 252, 0.5)';
+      ctx.fillRect(oX + ((24 + s*1.5) % 64), 20, 6, 2);
+      ctx.fillRect(oX + ((54 + s*1.2) % 64), 38, 8, 2);
+      
+      // Floating debris (leaves, plastic)
+      ctx.fillStyle = '#65a30d'; // green leaf
+      ctx.fillRect(oX + ((18 + s*0.5) % 64), 28, 4, 2);
+      ctx.fillStyle = '#f8fafc'; // white plastic
+      ctx.fillRect(oX + ((45 + s*0.6) % 64), 52, 6, 4);
     }
   });
 
   // 5. VEHICLES & PROPS
   createPixelCanvas('bus-detailed', 128, 64, (ctx) => {
-    // shadow
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(8, 50, 112, 14);
+    ctx.fillRect(8, 54, 112, 10); // shadow
 
-    // Body
-    ctx.fillStyle = '#dc2626'; // Bright RED BEST BUS
-    ctx.fillRect(10, 10, 108, 44);
-    // Highlight
-    ctx.fillStyle = '#f87171';
-    ctx.fillRect(10, 10, 108, 4);
-    
-    ctx.fillStyle = '#991b1b'; // lower dark body
-    ctx.fillRect(10, 36, 108, 18);
+    // Body (BEST Red)
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(10, 8, 108, 48);
+    // Lower body dark trim
+    ctx.fillStyle = '#991b1b';
+    ctx.fillRect(10, 42, 108, 14);
     // Yellow stripe
     ctx.fillStyle = '#f59e0b';
-    ctx.fillRect(10, 34, 108, 2);
+    ctx.fillRect(10, 38, 108, 4);
+
+    // Roof details
+    ctx.fillStyle = '#fca5a5'; ctx.fillRect(10, 8, 108, 2); // highlight
+    ctx.fillStyle = '#94a3b8'; ctx.fillRect(40, 4, 20, 4); // vent
+
     // Windows
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(16, 16, 96, 14);
-    // Window reflections
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-    ctx.beginPath(); ctx.moveTo(20, 16); ctx.lineTo(16, 30); ctx.lineTo(26, 30); ctx.lineTo(30, 16); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(50, 16); ctx.lineTo(46, 30); ctx.lineTo(56, 30); ctx.lineTo(60, 16); ctx.fill();
-    
+    ctx.fillRect(14, 16, 100, 16);
     ctx.fillStyle = '#64748b'; // pillars
-    for(let i=0; i<6; i++) ctx.fillRect(26 + i*16, 16, 4, 14);
+    for(let i=0; i<7; i++) ctx.fillRect(24 + i*16, 16, 4, 16);
+
+    // Reflections
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.beginPath(); ctx.moveTo(20, 16); ctx.lineTo(16, 32); ctx.lineTo(30, 32); ctx.lineTo(34, 16); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(60, 16); ctx.lineTo(56, 32); ctx.lineTo(70, 32); ctx.lineTo(74, 16); ctx.fill();
+
     // Wheels
     ctx.fillStyle = '#020617';
-    ctx.fillRect(24, 52, 16, 10);
-    ctx.fillRect(88, 52, 16, 10);
-    ctx.fillStyle = '#94a3b8'; // hubcaps
-    ctx.fillRect(28, 54, 8, 6);
-    ctx.fillRect(92, 54, 8, 6);
-    // Details
-    ctx.fillStyle = '#fef08a'; // headlights
-    ctx.fillRect(116, 42, 4, 6);
-    ctx.fillStyle = '#ef4444'; // taillights
-    ctx.fillRect(10, 42, 4, 6);
-    // Sign
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(44, 4, 40, 8);
-    ctx.fillStyle = '#fef08a';
-    ctx.fillRect(48, 6, 32, 4); // text squiggles
+    ctx.fillRect(24, 52, 16, 12);
+    ctx.fillRect(88, 52, 16, 12);
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(28, 54, 8, 8);
+    ctx.fillRect(92, 54, 8, 8);
+
+    // Lights & Sign
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(116, 46, 4, 8); // headlight
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(10, 46, 4, 8); // taillight
+    ctx.fillStyle = '#000000'; ctx.fillRect(110, 18, 4, 12); // route board
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(44, 4, 40, 8); // side sign
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(48, 6, 32, 4);
   });
 
   createPixelCanvas('auto-rickshaw', 48, 32, (ctx) => {
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(4, 26, 40, 6);
-    // Yellow top
-    ctx.fillStyle = '#eab308';
-    ctx.fillRect(6, 4, 36, 14);
-    ctx.fillStyle = '#fde047'; // highlight
-    ctx.fillRect(6, 4, 36, 2);
-    // Black bottom
+    
+    // Canvas roof
+    ctx.fillStyle = '#eab308'; // yellow
+    ctx.beginPath(); ctx.moveTo(6, 18); ctx.lineTo(8, 4); ctx.lineTo(40, 4); ctx.lineTo(42, 18); ctx.fill();
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(10, 4, 28, 2); // highlight
+    
+    // Black lower body
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(6, 18, 36, 8);
+    ctx.fillRect(6, 18, 36, 10);
+    
+    // Driver cabin / Windshield
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(36, 10, 6, 8); // frame
+    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(38, 12, 4, 6); // glass
+    
+    // Passenger cabin open window
+    ctx.fillStyle = '#020617'; ctx.fillRect(10, 8, 20, 10); // inside
+    ctx.fillStyle = '#334155'; ctx.fillRect(14, 12, 8, 6); // seat
+    
+    // Wheels (3 wheeler layout)
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(12, 26, 8, 8); // rear
+    ctx.fillRect(38, 26, 6, 6); // front
+    ctx.fillStyle = '#94a3b8'; ctx.fillRect(14, 28, 4, 4); // rim
+    
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(42, 22, 2, 4); // headlight
+  });
+
+  createPixelCanvas('taxi-pixel', 64, 32, (ctx) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(4, 26, 56, 6);
+    
+    // Black lower body
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(6, 16, 52, 10);
+    // Yellow roof (Premier Padmini style)
+    ctx.fillStyle = '#eab308';
+    ctx.beginPath(); ctx.moveTo(6, 16); ctx.lineTo(16, 6); ctx.lineTo(48, 6); ctx.lineTo(58, 16); ctx.fill();
+    ctx.fillStyle = '#fde047'; ctx.fillRect(20, 6, 20, 2); // highlight
+
     // Windows
-    ctx.fillStyle = '#0f172a'; // dark inside
-    ctx.fillRect(28, 8, 10, 8);
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'; // reflection
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(18, 8, 12, 8); ctx.fillRect(34, 8, 12, 8); // glass
+    ctx.fillStyle = '#020617'; // B-pillar
     ctx.fillRect(30, 8, 4, 8);
-    ctx.fillStyle = '#1e293b'; // frame
-    ctx.fillRect(24, 8, 4, 10);
-    // Wheels
-    ctx.fillStyle = '#020617';
-    ctx.fillRect(10, 26, 8, 6);
-    ctx.fillRect(32, 26, 8, 6);
-    // Front wheel connector
+    
+    // Luggage rack
     ctx.fillStyle = '#475569';
-    ctx.fillRect(36, 20, 2, 6);
+    ctx.fillRect(20, 2, 24, 4);
+    ctx.fillStyle = '#92400e'; // luggage box
+    ctx.fillRect(24, 0, 16, 4);
+
+    // Details
+    ctx.fillStyle = '#94a3b8'; ctx.fillRect(6, 22, 52, 2); // chrome bumper
+    ctx.fillStyle = '#000000'; ctx.fillRect(12, 26, 10, 8); ctx.fillRect(42, 26, 10, 8); // wheels
+    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(14, 28, 6, 4); ctx.fillRect(44, 28, 6, 4); // hubcaps
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(58, 18, 4, 4); // circular headlight
   });
 
   createPixelCanvas('car-pixel', 64, 32, (ctx) => {
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(4, 26, 56, 6);
-    // Blue body
-    ctx.fillStyle = '#2563eb';
-    ctx.fillRect(6, 12, 52, 14);
-    ctx.fillStyle = '#60a5fa'; // highlight
-    ctx.fillRect(6, 12, 52, 2);
-    // Roof
-    ctx.fillStyle = '#1d4ed8';
-    ctx.fillRect(16, 4, 30, 8);
+    // Dark metallic grey/blue body
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(6, 16, 52, 10);
+    ctx.beginPath(); ctx.moveTo(6, 16); ctx.lineTo(20, 8); ctx.lineTo(44, 8); ctx.lineTo(58, 16); ctx.fill();
+    ctx.fillStyle = '#64748b'; ctx.fillRect(20, 8, 20, 2); // highlight
+
     // Windows
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(18, 6, 10, 6);
-    ctx.fillRect(30, 6, 12, 6);
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'; // reflection
-    ctx.fillRect(20, 6, 4, 6);
-    ctx.fillRect(34, 6, 4, 6);
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(22, 10, 10, 6); ctx.fillRect(34, 10, 8, 6);
     // Wheels
-    ctx.fillStyle = '#020617';
-    ctx.fillRect(12, 26, 10, 6);
-    ctx.fillRect(42, 26, 10, 6);
+    ctx.fillStyle = '#000000'; ctx.fillRect(12, 26, 10, 8); ctx.fillRect(42, 26, 10, 8);
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(58, 18, 2, 4); // headlight
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(6, 18, 2, 4); // taillight
+  });
+
+  createPixelCanvas('scooter-pixel', 32, 24, (ctx) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(4, 20, 24, 4);
+    // Body (white/silver)
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(8, 14, 16, 6); // base
+    ctx.fillRect(20, 8, 4, 6); // front shield
+    // Seat
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(6, 12, 10, 4);
+    // Handle
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(20, 6, 6, 2);
+    // Wheels
+    ctx.fillStyle = '#000000'; ctx.fillRect(6, 18, 6, 6); ctx.fillRect(20, 18, 6, 6);
+    ctx.fillStyle = '#fef08a'; ctx.fillRect(24, 12, 2, 4); // headlight
   });
 
   // 6. HAZARDS & PROPS
@@ -573,38 +632,66 @@ export function generatePixelTextures(scene: Phaser.Scene) {
 
   createPixelCanvas('building-chawl', 256, 192, (ctx) => {
     // 2.5D Chawl. Top 64px is roof, Bottom 128px is facade (2 floors)
-    // Roof
+    // Roof Parapet
     ctx.fillStyle = '#334155';
     ctx.fillRect(0, 0, 256, 64);
-    // Tanks
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(0, 0, 256, 4); // border
+    
+    // Multiple Tanks and Antennas
     ctx.fillStyle = '#000000';
     ctx.fillRect(40, 10, 30, 20);
+    ctx.fillStyle = '#f8fafc'; ctx.fillRect(48, 16, 14, 2); // logo
+    ctx.fillStyle = '#0f172a';
     ctx.fillRect(180, 20, 24, 24);
+    ctx.fillRect(200, 10, 16, 30);
+    // Clotheslines on roof
+    ctx.fillStyle = '#94a3b8'; ctx.fillRect(80, 30, 60, 1);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(84, 31, 8, 8);
+    ctx.fillStyle = '#facc15'; ctx.fillRect(100, 31, 6, 10);
+    ctx.fillStyle = '#3b82f6'; ctx.fillRect(120, 31, 10, 12);
 
-    // Facade
+    // Facade Base Plaster
     ctx.fillStyle = '#cbd5e1';
     ctx.fillRect(0, 64, 256, 128);
-
+    
+    // Weathering / Moss
+    ctx.fillStyle = '#94a3b8';
+    for(let i=0; i<80; i++) ctx.fillRect(Math.random()*256, 64+Math.random()*128, Math.random()*20, Math.random()*6);
+    ctx.fillStyle = '#4d7c0f'; // moss near pipes and bottom
+    for(let i=0; i<50; i++) ctx.fillRect(Math.random()*256, 180+Math.random()*12, Math.random()*8, Math.random()*4);
+    
     // Floor 1 (Y: 64 to 128)
     // Floor 2 (Y: 128 to 192)
     for (let r = 0; r < 2; r++) {
       const y = 64 + r * 64;
-      // Balcony
-      ctx.fillStyle = '#0f172a'; // shadow behind railing
+      // Shadow behind balcony railing
+      ctx.fillStyle = '#0f172a';
       ctx.fillRect(10, y + 24, 236, 40);
       
-      // Railing
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillRect(10, y + 20, 236, 4);
-      for (let x = 10; x < 246; x += 12) ctx.fillRect(x, y + 20, 2, 44);
+      // Railing Structure
+      ctx.fillStyle = '#64748b'; // stone railing
+      ctx.fillRect(10, y + 20, 236, 6);
+      for (let x = 10; x < 246; x += 16) {
+        ctx.fillRect(x, y + 20, 4, 44);
+        // Peeling paint on pillars
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(x, y + 30, 4, 10);
+        ctx.fillStyle = '#64748b';
+      }
 
-      // Doors in shadow
+      // Doors and details in shadow
       for (let d = 0; d < 6; d++) {
         const x = 20 + d * 38;
         ctx.fillStyle = '#78350f'; // wood door
         ctx.fillRect(x, y + 24, 18, 40);
-        // Clothes hanging
-        if (Math.random() > 0.4) {
+        ctx.fillStyle = '#facc15'; // light bulb
+        ctx.fillRect(x - 6, y + 28, 4, 4);
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.2)'; // glow
+        ctx.beginPath(); ctx.arc(x - 4, y + 30, 16, 0, Math.PI*2); ctx.fill();
+
+        // Clothes hanging outside doors
+        if (Math.random() > 0.3) {
           ctx.fillStyle = Math.random() > 0.5 ? '#ef4444' : '#3b82f6';
           ctx.fillRect(x + 10, y + 10, 12, 16);
           ctx.fillStyle = '#475569'; // wire
@@ -612,6 +699,16 @@ export function generatePixelTextures(scene: Phaser.Scene) {
         }
       }
     }
+    
+    // Outer tangled main electrical wires
+    ctx.strokeStyle = '#020617';
+    ctx.lineWidth = 1;
+    for(let i=0; i<4; i++) {
+      ctx.beginPath(); ctx.moveTo(0, 100 + i*15); ctx.quadraticCurveTo(128, 140 + i*5, 256, 110 + i*10); ctx.stroke();
+    }
+    // Main vertical pipe
+    ctx.fillStyle = '#334155'; ctx.fillRect(240, 64, 8, 128);
+    ctx.fillStyle = '#0f172a'; for(let i=70; i<192; i+=20) ctx.fillRect(238, i, 12, 4);
   });
 
   createPixelCanvas('building-res', 128, 128, (ctx) => {

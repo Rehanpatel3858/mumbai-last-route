@@ -64,12 +64,16 @@ export class MapGenerator {
     // DISTRICT D: Flooded Lowlands [Bottom Right: 1700 to 3200, 1300 to 2400]
     this.generateLowlands(scene, 1700, 1300, 1500, 1100, obstaclesGroup, doors, validVehicleSpots);
 
-    // Scatted Environmental Props (Trees, Barricades)
-    for(let i=0; i<60; i++) {
+    // Scatted Environmental Props (Trees, Barricades, Food Carts)
+    for(let i=0; i<80; i++) {
       const px = Math.random() * mapWidth;
       const py = Math.random() * mapHeight;
       if (!this.isInsideBuilding(px, py)) {
-        const type = Math.random() > 0.5 ? 'barricade' : 'tree-pixel';
+        const rand = Math.random();
+        let type = 'barricade';
+        if (rand > 0.6) type = 'tree-pixel';
+        if (rand > 0.85) type = 'food-cart';
+        
         const b = scene.add.image(px, py, type).setDepth(type === 'tree-pixel' ? 25 : 5);
         scene.physics.add.existing(b, true);
         obstaclesGroup.add(b);
