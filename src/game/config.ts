@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 
+
 export function createGameConfig(containerId: string): Phaser.Types.Core.GameConfig {
   return {
     type: Phaser.AUTO,

@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player';
-import { Civilian, type CivilianType } from '../entities/Civilian';
+import { Civilian } from '../entities/Civilian';
 import { Hazard } from '../entities/Hazard';
-import { Vehicle } from '../entities/Vehicle';
 import { SafeZone } from '../entities/SafeZone';
+import { Door } from '../entities/Door';
 import { FLOOD_PHASES, type FloodPhase, getPhaseForTime } from '../systems/FloodSystem';
 import { type ScoreBreakdown, calculateScore } from '../systems/ScoreSystem';
 import { soundSynth } from '../utils/SoundSynth';
+import { MapGenerator } from '../systems/MapGenerator';
 
 export interface GameBridgeEvents {
   onTimeUpdate: (seconds: number) => void;
@@ -14,6 +15,8 @@ export interface GameBridgeEvents {
   onCiviliansUpdate: (rescued: number, total: number) => void;
   onAlert: (sender: string, title: string, msg: string, severity: 'INFO' | 'WARNING' | 'CRITICAL') => void;
   onGameOver: (victory: boolean, score: ScoreBreakdown) => void;
+  onToggleMap: (isOpen: boolean) => void;
+  onMapUpdate: (data: any) => void;
 }
 
 export class MainGameScene extends Phaser.Scene {
@@ -41,6 +44,11 @@ export class MainGameScene extends Phaser.Scene {
   private isPaused = false;
   private isGameOver = false;
 
+  private mapOpen = false;
+  private mapUpdateTimer = 0;
+
+  private doors: Door[] = [];
+
   private waterAnimTimer = 0;
   private waterFrame = 0;
 
@@ -63,7 +71,15 @@ export class MainGameScene extends Phaser.Scene {
     this.civiliansGroup = this.add.group();
     this.hazardsGroup = this.physics.add.group();
 
-    this.drawDenseUrbanMap(mapWidth, mapHeight);
+    this.safeZoneObj = MapGenerator.generate(
+      this,
+      mapWidth,
+      mapHeight,
+      this.obstaclesGroup,
+      this.civiliansGroup,
+      this.hazardsGroup,
+      this.doors
+    );
 
     // Spawn player alone in an empty street intersection
     this.player = new Player(this, 1600, 2000);
@@ -102,88 +118,7 @@ export class MainGameScene extends Phaser.Scene {
     this.eventsBridge.onAlert('COMMAND', 'MISSION START', 'You are alone. Search the streets to find and rescue stranded civilians before the flood rises.', 'INFO');
   }
 
-  private drawDenseUrbanMap(mapWidth: number, mapHeight: number) {
-    // 1. Fill base with asphalt (roads)
-    for (let x = 0; x < mapWidth; x += 64) {
-      for (let y = 0; y < mapHeight; y += 64) {
-        this.add.image(x + 32, y + 32, 'road-tile');
-      }
-    }
 
-    // 2. City Blocks - we will create a grid of large building blocks
-    const blockSize = 512;
-    const roadWidth = 256;
-    const cols = Math.floor(mapWidth / (blockSize + roadWidth));
-    const rows = Math.floor(mapHeight / (blockSize + roadWidth));
-
-    for (let c = 0; c < cols; c++) {
-      for (let r = 0; r < rows; r++) {
-        const startX = c * (blockSize + roadWidth) + roadWidth / 2;
-        const startY = r * (blockSize + roadWidth) + roadWidth / 2;
-
-        // Sidewalk around block
-        for (let sx = startX - 32; sx < startX + blockSize + 32; sx += 64) {
-          this.add.image(sx + 32, startY - 32 + 32, 'sidewalk-tile');
-          this.add.image(sx + 32, startY + blockSize + 32, 'sidewalk-tile');
-        }
-        for (let sy = startY - 32; sy < startY + blockSize + 32; sy += 64) {
-          this.add.image(startX - 32 + 32, sy + 32, 'sidewalk-tile');
-          this.add.image(startX + blockSize + 32, sy + 32, 'sidewalk-tile');
-        }
-
-        // Fill block with buildings (128x128 each)
-        for (let bx = 0; bx < blockSize; bx += 128) {
-          for (let by = 0; by < blockSize; by += 128) {
-            const isShop = Math.random() > 0.5;
-            const b = this.add.image(startX + bx + 64, startY + by + 64, isShop ? 'building-shop' : 'building-res');
-            this.physics.add.existing(b, true);
-            this.obstaclesGroup.add(b);
-          }
-        }
-      }
-    }
-
-    // Trees and Props along sidewalks
-    for(let i=0; i<60; i++) {
-      const tx = Math.random() * mapWidth;
-      const ty = Math.random() * mapHeight;
-      // Rough check to avoid placing trees completely in roads, just scatter them
-      const t = this.add.image(tx, ty, 'tree-pixel');
-      t.setDepth(12); // above player heads
-    }
-
-    // Vehicles scattered
-    for(let i=0; i<8; i++) new Vehicle(this, Math.random() * mapWidth, Math.random() * mapHeight, 'BUS');
-    for(let i=0; i<15; i++) new Vehicle(this, Math.random() * mapWidth, Math.random() * mapHeight, 'RICKSHAW');
-    for(let i=0; i<15; i++) new Vehicle(this, Math.random() * mapWidth, Math.random() * mapHeight, 'CAR');
-
-    // Hazards
-    for(let i=0; i<12; i++) new Hazard(this, Math.random() * mapWidth, Math.random() * mapHeight, 'MANHOLE');
-    for(let i=0; i<10; i++) new Hazard(this, Math.random() * mapWidth, Math.random() * mapHeight, 'ELECTRICAL');
-    for(let i=0; i<15; i++) new Hazard(this, Math.random() * mapWidth, Math.random() * mapHeight, 'DEBRIS');
-
-    // Safe Zone (Top Right corner)
-    this.safeZoneObj = new SafeZone(this, mapWidth - 400, 300);
-
-    // Civilians spread far out in the city
-    const civSpawns = [
-      { x: 500, y: 500, type: 'NORMAL', label: 'Commuter' },
-      { x: 800, y: 1500, type: 'ELDERLY', label: 'Elderly' },
-      { x: 1200, y: 600, type: 'CHILD', label: 'Child' },
-      { x: 2200, y: 1800, type: 'INJURED', label: 'Injured' },
-      { x: 2800, y: 800, type: 'NORMAL', label: 'Shopkeeper' },
-      { x: 400, y: 2000, type: 'CHILD', label: 'Child' },
-      { x: 1800, y: 400, type: 'ELDERLY', label: 'Resident' },
-      { x: 2500, y: 2200, type: 'NORMAL', label: 'Commuter' },
-      { x: 1000, y: 2200, type: 'INJURED', label: 'Worker' },
-      { x: 1500, y: 1200, type: 'NORMAL', label: 'Resident' },
-    ];
-
-    civSpawns.forEach((c) => {
-      const civ = new Civilian(this, c.x, c.y, c.type as CivilianType, c.label);
-      this.civiliansGroup.add(civ);
-    });
-  }
 
   private createRainEffect(mapWidth: number) {
     const rainParticles = this.add.particles(0, 0, 'debris-pixel', {
@@ -224,6 +159,11 @@ export class MainGameScene extends Phaser.Scene {
     if (this.isGameOver) return;
 
     if (Phaser.Input.Keyboard.JustDown(this.wasd.ESC)) {
+      if (this.mapOpen) {
+        this.mapOpen = false;
+        this.eventsBridge.onToggleMap(this.mapOpen);
+        return;
+      }
       this.isPaused = !this.isPaused;
       if (this.isPaused) {
         this.physics.pause();
@@ -233,6 +173,44 @@ export class MainGameScene extends Phaser.Scene {
         this.timerEvent.paused = false;
       }
       return;
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.wasd.M)) {
+      this.mapOpen = !this.mapOpen;
+      this.eventsBridge.onToggleMap(this.mapOpen);
+    }
+
+    if (this.isPaused) return;
+
+    // Door check
+    let activeDoor: Door | null = null;
+    for (const door of this.doors) {
+      door.checkProximity(this.player);
+      if (door.canEnter()) activeDoor = door;
+    }
+
+    if (activeDoor && Phaser.Input.Keyboard.JustDown(this.wasd.E)) {
+      this.scene.pause();
+      this.scene.launch('InteriorScene', { 
+        type: activeDoor.destScene, 
+        playerX: this.player.x, 
+        playerY: this.player.y 
+      });
+      return;
+    }
+    if (this.mapOpen) {
+      this.mapUpdateTimer += delta;
+      if (this.mapUpdateTimer > 150) {
+        this.mapUpdateTimer = 0;
+        this.eventsBridge.onMapUpdate({
+          player: { x: this.player.x, y: this.player.y },
+          civilians: this.civiliansGroup.getChildren().map(c => ({ x: (c as Civilian).x, y: (c as Civilian).y, isRescued: (c as Civilian).isRescued })),
+          hazards: this.hazardsGroup.getChildren().map(h => ({ x: (h as Hazard).x, y: (h as Hazard).y, type: (h as Hazard).hazardType })),
+          safeZone: { x: this.safeZoneObj.x, y: this.safeZoneObj.y, width: 256, height: 256 },
+          mapWidth: this.physics.world.bounds.width,
+          mapHeight: this.physics.world.bounds.height
+        });
+      }
     }
 
     if (this.isPaused) return;
@@ -251,7 +229,17 @@ export class MainGameScene extends Phaser.Scene {
       this.waterOverlayGraphics.clear();
       const floodHeight = (this.currentPhaseIndex / 4) * 0.5; // Up to 50% opacity
       this.waterOverlayGraphics.fillStyle(0x0c4a6e, floodHeight);
-      this.waterOverlayGraphics.fillRect(0, 0, this.physics.world.bounds.width, this.physics.world.bounds.height);
+      
+      // Flood Lowlands (Bottom Right)
+      this.waterOverlayGraphics.fillRect(1200, 1600, this.physics.world.bounds.width - 1200, this.physics.world.bounds.height - 1600);
+      
+      // Flood Chawls (Bottom Left) but slightly less deep visually
+      this.waterOverlayGraphics.fillStyle(0x0c4a6e, floodHeight * 0.7);
+      this.waterOverlayGraphics.fillRect(0, 1200, 1200, this.physics.world.bounds.height - 1200);
+
+      // Light puddles in Market
+      this.waterOverlayGraphics.fillStyle(0x0c4a6e, floodHeight * 0.3);
+      this.waterOverlayGraphics.fillRect(0, 0, 1200, 1200);
       
       // Moving water ripples based on waterAnimTimer
       const px = this.cameras.main.scrollX;

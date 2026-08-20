@@ -406,4 +406,154 @@ export function generatePixelTextures(scene: Phaser.Scene) {
     ctx.fillStyle = '#f59e0b';
     ctx.fillText('EVACUATION', 36, 110);
   });
+
+  // 7. NEW MUMBAI SPECIFIC BUILDINGS
+  createPixelCanvas('building-chawl', 256, 128, (ctx) => {
+    // Weathered plaster
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(0, 0, 256, 128);
+    // Grunge / Moss at the bottom
+    ctx.fillStyle = '#475569';
+    for (let x = 0; x < 256; x += 16) ctx.fillRect(x, 110 + Math.random() * 10, 16, 18);
+    
+    // Corridors and Doors (3 floors)
+    for (let r = 0; r < 3; r++) {
+      const y = 20 + r * 32;
+      // Balcony railing
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10, y + 20, 236, 4);
+      for (let x = 10; x < 246; x += 8) ctx.fillRect(x, y + 16, 2, 4);
+      
+      // Doors
+      for (let d = 0; d < 6; d++) {
+        const x = 20 + d * 38;
+        ctx.fillStyle = '#78350f'; // wood door
+        ctx.fillRect(x, y, 14, 20);
+        // Clothes hanging outside some doors
+        if (Math.random() > 0.5) {
+          ctx.fillStyle = Math.random() > 0.5 ? '#ef4444' : '#3b82f6'; // random cloth color
+          ctx.fillRect(x + 16, y + 10, 10, 12);
+          ctx.fillStyle = '#94a3b8'; // wire
+          ctx.fillRect(x + 16, y + 10, 10, 1);
+        }
+      }
+    }
+    // Water tanks on roof
+    ctx.fillStyle = '#000000'; // black sintex tank
+    ctx.fillRect(40, 0, 24, 16);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(180, 4, 20, 12);
+  });
+
+  createPixelCanvas('railway-platform', 256, 128, (ctx) => {
+    ctx.fillStyle = '#94a3b8'; // concrete platform
+    ctx.fillRect(0, 0, 256, 128);
+    // Yellow warning line
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(0, 100, 256, 8);
+    // Track area
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(0, 112, 256, 16);
+    ctx.fillStyle = '#334155'; // sleepers
+    for(let x = 0; x < 256; x += 16) ctx.fillRect(x, 114, 4, 12);
+    // Benches & signs
+    ctx.fillStyle = '#fef08a'; // yellow board
+    ctx.fillRect(100, 20, 56, 16);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(104, 24, 48, 8); // text placeholder
+    
+    // Metal roof pillars
+    ctx.fillStyle = '#64748b';
+    for(let x = 20; x < 256; x += 80) ctx.fillRect(x, 0, 8, 100);
+  });
+
+  // 8. NEW MUMBAI PROPS & VEHICLES
+  createPixelCanvas('food-cart', 48, 48, (ctx) => {
+    // Umbrella
+    ctx.fillStyle = '#ef4444'; // red/yellow umbrella
+    ctx.beginPath(); ctx.arc(24, 16, 20, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath(); ctx.arc(24, 16, 10, Math.PI, 0); ctx.fill();
+    // Pole
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(23, 16, 2, 16);
+    // Cart
+    ctx.fillStyle = '#0ea5e9'; // blue cart
+    ctx.fillRect(8, 32, 32, 12);
+    // Wheels
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath(); ctx.arc(14, 44, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(34, 44, 4, 0, Math.PI*2); ctx.fill();
+    // Pans / Food
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(12, 30, 10, 2); // pan
+    ctx.fillStyle = '#eab308'; // vada pav / bhajiya
+    ctx.fillRect(14, 28, 6, 2);
+  });
+
+  createPixelCanvas('street-light', 32, 64, (ctx) => {
+    // Base
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(12, 56, 8, 8);
+    // Pole
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(14, 8, 4, 48);
+    // Arm
+    ctx.fillRect(14, 8, 14, 4);
+    // Light
+    ctx.fillStyle = '#fef08a';
+    ctx.fillRect(24, 12, 6, 4);
+    // Glow
+    ctx.fillStyle = 'rgba(254, 240, 138, 0.2)';
+    ctx.beginPath(); ctx.moveTo(27, 16); ctx.lineTo(10, 64); ctx.lineTo(44, 64); ctx.fill();
+  });
+
+  createPixelCanvas('barricade', 48, 32, (ctx) => {
+    // Mumbai Police style yellow barricade
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(4, 8, 40, 20);
+    ctx.fillStyle = '#0f172a'; // black text/stripes
+    ctx.fillRect(8, 12, 32, 4);
+    ctx.fillRect(8, 20, 32, 4);
+    // Legs
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(6, 28, 4, 4);
+    ctx.fillRect(38, 28, 4, 4);
+  });
+
+  createPixelCanvas('taxi-pixel', 64, 32, (ctx) => {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(4, 26, 56, 6);
+    // Kaali-Peeli Taxi
+    ctx.fillStyle = '#0f172a'; // black bottom
+    ctx.fillRect(6, 16, 52, 10);
+    ctx.fillStyle = '#facc15'; // yellow top
+    ctx.fillRect(14, 4, 34, 12);
+    // Windows
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(18, 6, 10, 8);
+    ctx.fillRect(32, 6, 12, 8);
+    // Wheels
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(12, 24, 8, 8);
+    ctx.fillRect(44, 24, 8, 8);
+  });
+
+  createPixelCanvas('scooter-pixel', 32, 32, (ctx) => {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(2, 28, 28, 4);
+    // Body (white/gray scooter)
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(6, 16, 20, 8);
+    ctx.fillRect(22, 10, 6, 10); // front panel
+    // Seat
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(8, 14, 12, 4);
+    // Wheels
+    ctx.fillStyle = '#020617';
+    ctx.beginPath(); ctx.arc(8, 26, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(24, 26, 4, 0, Math.PI*2); ctx.fill();
+  });
 }

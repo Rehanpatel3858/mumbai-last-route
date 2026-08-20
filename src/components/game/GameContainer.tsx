@@ -4,6 +4,7 @@ import { createGameConfig } from '../../game/config';
 import type { GameBridgeEvents } from '../../game/scenes/MainGameScene';
 import { BootScene } from '../../game/scenes/BootScene';
 import { MainGameScene } from '../../game/scenes/MainGameScene';
+import { InteriorScene } from '../../game/scenes/InteriorScene';
 import { FLOOD_PHASES, type FloodPhase } from '../../game/systems/FloodSystem';
 import type { ScoreBreakdown } from '../../game/systems/ScoreSystem';
 import { useGameState } from '../../context/GameStateContext';
@@ -11,6 +12,7 @@ import { GameHUD } from './GameHUD';
 import { PauseModal } from './PauseModal';
 import { VictoryModal } from './VictoryModal';
 import { FailureModal } from './FailureModal';
+import { MapOverlay } from './MapOverlay';
 
 export const GameContainer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +33,8 @@ export const GameContainer: React.FC = () => {
   } | null>(null);
 
   const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isMapOpen, setIsMapOpen] = useState<boolean>(false);
+  const [mapData, setMapData] = useState<any>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -49,6 +53,12 @@ export const GameContainer: React.FC = () => {
       onGameOver: (victory: boolean, score: ScoreBreakdown) => {
         handleGameOver(victory, score);
       },
+      onToggleMap: (isOpen: boolean) => {
+        setIsMapOpen(isOpen);
+      },
+      onMapUpdate: (data: any) => {
+        setMapData(data);
+      }
     };
 
     const config = createGameConfig(containerRef.current.id);
@@ -57,6 +67,7 @@ export const GameContainer: React.FC = () => {
 
     game.scene.add('BootScene', BootScene);
     game.scene.add('MainGameScene', MainGameScene);
+    game.scene.add('InteriorScene', InteriorScene);
     game.scene.start('BootScene', { eventsBridge: bridgeEvents });
 
     return () => {
@@ -85,6 +96,8 @@ export const GameContainer: React.FC = () => {
           onGameOver: (victory: boolean, score: ScoreBreakdown) => {
             handleGameOver(victory, score);
           },
+          onToggleMap: (isOpen: boolean) => setIsMapOpen(isOpen),
+          onMapUpdate: (data: any) => setMapData(data),
         },
       });
     }
@@ -109,6 +122,8 @@ export const GameContainer: React.FC = () => {
           onRestart={handleRestart}
         />
       )}
+
+      {isMapOpen && <MapOverlay data={mapData} />}
 
       {gameStatus === 'VICTORY' && activeScore && (
         <VictoryModal
