@@ -172,8 +172,18 @@ export const MapOverlay: React.FC<MapOverlayProps> = ({ data }) => {
         <span><span style={{ display: 'inline-block', width: 12, height: 12, backgroundColor: '#0c4a6e' }} /> FLOODED</span>
       </div>
       
-      <div style={{ marginTop: '2rem', fontFamily: 'var(--font-pixel)', color: 'var(--text-secondary)' }}>
+      <div className="desktop-controls" style={{ marginTop: '2rem', fontFamily: 'var(--font-pixel)', color: 'var(--text-secondary)' }}>
         PRESS M OR ESC TO CLOSE
+      </div>
+
+      <div className="mobile-controls" style={{ marginTop: '2rem' }}>
+        <button 
+          className="game-button game-button-secondary" 
+          style={{ padding: '1rem 2rem', fontSize: '1rem', borderRadius: '12px' }}
+          onClick={() => window.dispatchEvent(new Event('mobile-action-map'))}
+        >
+          X CLOSE MAP
+        </button>
       </div>
     </div>
   );

@@ -66,6 +66,24 @@ body {
   margin: 0;
 }
 
+body.game-mode {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  touch-action: none;
+}
+
+body.game-mode #root {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
 h1,
 h2 {
   font-family: var(--heading);
@@ -108,4 +126,20 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+.mobile-controls {
+  display: none;
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  .mobile-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    pointer-events: auto;
+  }
+  .desktop-controls {
+    display: none !important;
+  }
 }

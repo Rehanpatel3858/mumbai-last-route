@@ -51,6 +51,12 @@ export class MainGameScene extends Phaser.Scene {
   
   private vehiclesGroup!: Phaser.Physics.Arcade.StaticGroup;
 
+  private isMobile = false;
+  private joystickBase!: Phaser.GameObjects.Graphics;
+  private joystickKnob!: Phaser.GameObjects.Graphics;
+  private joystickActive = false;
+  private joystickVector = new Phaser.Math.Vector2(0, 0);
+
   constructor() {
     super('MainGameScene');
   }
@@ -104,6 +110,12 @@ export class MainGameScene extends Phaser.Scene {
     this.waterOverlayGraphics = this.add.graphics();
     this.waterOverlayGraphics.setDepth(20); // Above ground, below UI
 
+    // Stormy Darkness Overlay (Classic Multiply Blend)
+    const darkness = this.add.rectangle(0, 0, mapWidth, mapHeight, 0x000b18, 0.75);
+    darkness.setOrigin(0, 0);
+    darkness.setDepth(22);
+    darkness.setBlendMode(Phaser.BlendModes.MULTIPLY);
+
     if (this.input.keyboard) {
       // Remove old listener if any
       this.input.keyboard.removeAllKeys();
@@ -120,6 +132,22 @@ export class MainGameScene extends Phaser.Scene {
       };
     }
 
+    this.isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS || this.sys.game.device.os.iPad || this.sys.game.device.os.windowsPhone;
+    if (this.isMobile) {
+      this.input.addPointer(2);
+      this.joystickBase = this.add.graphics().setScrollFactor(0).setDepth(100);
+      this.joystickBase.fillStyle(0x000000, 0.4);
+      this.joystickBase.fillCircle(100, this.cameras.main.height - 100, 60);
+
+      this.joystickKnob = this.add.graphics().setScrollFactor(0).setDepth(101);
+      this.joystickKnob.fillStyle(0x38bdf8, 0.8);
+      this.joystickKnob.fillCircle(100, this.cameras.main.height - 100, 30);
+
+      this.input.on('pointerdown', this.handleJoystick, this);
+      this.input.on('pointermove', this.handleJoystick, this);
+      this.input.on('pointerup', this.handleJoystickEnd, this);
+    }
+
     // Player Collision
     this.physics.add.collider(this.player, this.obstaclesGroup);
     this.physics.add.collider(this.player, this.vehiclesGroup);
@@ -134,9 +162,101 @@ export class MainGameScene extends Phaser.Scene {
     this.eventsBridge.onCiviliansUpdate(0, this.totalCivilians);
 
     this.eventsBridge.onAlert('COMMAND', 'MISSION START', 'You are alone. Search the streets to find and rescue stranded civilians before the flood rises.', 'INFO');
+
+    // Mobile Action Listeners
+    window.addEventListener('mobile-action-rescue', this.handleMobileRescue.bind(this));
+    window.addEventListener('mobile-action-map', this.handleMobileMap.bind(this));
+    window.addEventListener('mobile-action-pause', this.handleMobilePause.bind(this));
+    this.events.on('destroy', () => {
+      window.removeEventListener('mobile-action-rescue', this.handleMobileRescue.bind(this));
+      window.removeEventListener('mobile-action-map', this.handleMobileMap.bind(this));
+      window.removeEventListener('mobile-action-pause', this.handleMobilePause.bind(this));
+    });
   }
 
+  private handleMobilePause = () => {
+    if (this.isGameOver) return;
+    if (this.mapOpen) {
+      this.mapOpen = false;
+      this.eventsBridge.onToggleMap(this.mapOpen);
+      return;
+    }
+    this.isPaused = !this.isPaused;
+    if (this.isPaused) {
+      this.physics.pause();
+      this.timerEvent.paused = true;
+    } else {
+      this.physics.resume();
+      this.timerEvent.paused = false;
+    }
+  };
 
+  private handleMobileMap = () => {
+    if (this.isGameOver || this.isPaused) return;
+    this.mapOpen = !this.mapOpen;
+    this.eventsBridge.onToggleMap(this.mapOpen);
+  };
+
+  private handleMobileRescue = () => {
+    if (this.isGameOver || this.isPaused) return;
+    // We simulate the E key logic by doing the proximity check here
+    const px = this.player.x;
+    const py = this.player.y;
+    let closestCivilian: Civilian | null = null;
+    let minCivDist = 80;
+
+    for (const c of this.civiliansGroup.getChildren()) {
+      const civ = c as Civilian;
+      if (!civ.isRescued) {
+        const d = Phaser.Math.Distance.Between(px, py, civ.x, civ.y);
+        if (d < minCivDist) {
+          minCivDist = d;
+          closestCivilian = civ;
+        }
+      }
+    }
+
+    if (closestCivilian) {
+      closestCivilian.rescue(this);
+      this.rescuedCivilians.push(closestCivilian);
+      this.eventsBridge.onCiviliansUpdate(this.rescuedCivilians.length, this.totalCivilians);
+      soundSynth.playRescue();
+    }
+  };
+
+  private handleJoystick(pointer: Phaser.Input.Pointer) {
+    if (!this.isMobile) return;
+    if (pointer.x < this.cameras.main.width / 2) {
+      if (pointer.isDown) {
+        this.joystickActive = true;
+        const centerX = 100;
+        const centerY = this.cameras.main.height - 100;
+        const distance = Phaser.Math.Distance.Between(centerX, centerY, pointer.x, pointer.y);
+        const angle = Phaser.Math.Angle.Between(centerX, centerY, pointer.x, pointer.y);
+        
+        const maxDist = 60;
+        const knobDist = Math.min(distance, maxDist);
+        
+        this.joystickKnob.clear();
+        this.joystickKnob.fillStyle(0x38bdf8, 0.8);
+        this.joystickKnob.fillCircle(centerX + Math.cos(angle) * knobDist, centerY + Math.sin(angle) * knobDist, 30);
+
+        this.joystickVector.set(Math.cos(angle), Math.sin(angle));
+        if (distance < 10) this.joystickVector.set(0, 0);
+      }
+    }
+  }
+
+  private handleJoystickEnd(pointer: Phaser.Input.Pointer) {
+    if (!this.isMobile) return;
+    if (pointer.x < this.cameras.main.width / 2) {
+      this.joystickActive = false;
+      this.joystickVector.set(0, 0);
+      this.joystickKnob.clear();
+      this.joystickKnob.fillStyle(0x38bdf8, 0.8);
+      this.joystickKnob.fillCircle(100, this.cameras.main.height - 100, 30);
+    }
+  }
 
   private createRainEffect(mapWidth: number) {
     const rainParticles = this.add.particles(0, 0, 'debris-pixel', {
@@ -289,7 +409,12 @@ export class MainGameScene extends Phaser.Scene {
     if (this.isPaused) return;
 
     const currentPhase = FLOOD_PHASES[this.currentPhaseIndex];
-    this.player.updateControls(this.wasd, this.cursors, currentPhase.speedPenalty);
+    this.player.updateControls(
+      this.wasd, 
+      this.cursors, 
+      currentPhase.speedPenalty, 
+      this.joystickActive ? this.joystickVector : undefined
+    );
 
     // Water flooding overlay logic
     if (this.currentPhaseIndex > 0) {

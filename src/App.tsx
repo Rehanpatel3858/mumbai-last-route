@@ -44,16 +44,33 @@ const AppContent: React.FC = () => {
 
   const isGameView = currentView === 'game';
 
+  React.useEffect(() => {
+    if (isGameView) {
+      document.body.classList.add('game-mode');
+    } else {
+      document.body.classList.remove('game-mode');
+    }
+    return () => document.body.classList.remove('game-mode');
+  }, [isGameView]);
+
+  if (isGameView) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <main style={{ flex: 1, position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column' }}>{renderView()}</main>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ height: isGameView ? '100vh' : 'auto', minHeight: '100vh', display: 'flex', flexDirection: 'column', overflow: isGameView ? 'hidden' : 'auto' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
       {/* Main Navbar */}
-      {!isGameView && <Navbar />}
+      <Navbar />
 
       {/* Page Content Container */}
       <main style={{ flex: 1, position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column' }}>{renderView()}</main>
 
       {/* Footer */}
-      {!isGameView && <Footer />}
+      <Footer />
     </div>
   );
 };

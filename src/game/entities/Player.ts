@@ -17,7 +17,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setScale(1.2);
 
     this.flashlightGraphics = scene.add.graphics();
-    this.flashlightGraphics.setDepth(15);
+    this.flashlightGraphics.setDepth(23); // Above darkness
+    this.flashlightGraphics.setBlendMode(Phaser.BlendModes.ADD);
   }
 
   public updateControls(
@@ -28,26 +29,39 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       D: Phaser.Input.Keyboard.Key;
     },
     cursors: Phaser.Types.Input.Keyboard.CursorKeys,
-    speedMultiplier: number
+    speedMultiplier: number,
+    joystickVector?: Phaser.Math.Vector2
   ) {
     let baseSpeed = 160 * speedMultiplier;
     let vx = 0;
     let vy = 0;
 
-    if (wasd.A.isDown || cursors.left?.isDown) {
-      vx -= baseSpeed;
-      this.currentDirection = 'left';
-    } else if (wasd.D.isDown || cursors.right?.isDown) {
-      vx += baseSpeed;
-      this.currentDirection = 'right';
-    }
+    if (joystickVector && (joystickVector.x !== 0 || joystickVector.y !== 0)) {
+      vx = joystickVector.x * baseSpeed;
+      vy = joystickVector.y * baseSpeed;
+      
+      // Determine direction for animation
+      if (Math.abs(joystickVector.x) > Math.abs(joystickVector.y)) {
+        this.currentDirection = joystickVector.x > 0 ? 'right' : 'left';
+      } else {
+        this.currentDirection = joystickVector.y > 0 ? 'down' : 'up';
+      }
+    } else {
+      if (wasd.A.isDown || cursors.left?.isDown) {
+        vx -= baseSpeed;
+        this.currentDirection = 'left';
+      } else if (wasd.D.isDown || cursors.right?.isDown) {
+        vx += baseSpeed;
+        this.currentDirection = 'right';
+      }
 
-    if (wasd.W.isDown || cursors.up?.isDown) {
-      vy -= baseSpeed;
-      this.currentDirection = 'up';
-    } else if (wasd.S.isDown || cursors.down?.isDown) {
-      vy += baseSpeed;
-      this.currentDirection = 'down';
+      if (wasd.W.isDown || cursors.up?.isDown) {
+        vy -= baseSpeed;
+        this.currentDirection = 'up';
+      } else if (wasd.S.isDown || cursors.down?.isDown) {
+        vy += baseSpeed;
+        this.currentDirection = 'down';
+      }
     }
 
     this.setVelocity(vx, vy);

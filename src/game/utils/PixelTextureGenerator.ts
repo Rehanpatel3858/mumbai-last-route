@@ -140,62 +140,144 @@ export function generatePixelTextures(scene: Phaser.Scene) {
   };
 
   createPixelCanvas('building-shop', 128, 128, (ctx) => {
-    // Brick base
-    ctx.fillStyle = '#78350f';
+    // Concrete base with weathering
+    ctx.fillStyle = '#64748b'; // darker concrete
     ctx.fillRect(0, 0, 128, 128);
+    // Stains and weathering
+    ctx.fillStyle = '#475569';
+    for(let i=0; i<30; i++) {
+      ctx.fillRect(Math.random()*128, Math.random()*80, Math.random()*20+5, Math.random()*4+1);
+    }
+    // Brick pattern exposed
     ctx.fillStyle = '#92400e';
-    for (let by = 0; by < 128; by += 8) {
-      for (let bx = (by % 16 === 0 ? 0 : 8); bx < 128; bx += 16) {
-        ctx.fillRect(bx, by, 14, 7);
+    for (let by = 16; by < 64; by += 8) {
+      for (let bx = (by % 16 === 0 ? 10 : 18); bx < 118; bx += 24) {
+        if(Math.random() > 0.6) ctx.fillRect(bx, by, 10, 4);
       }
     }
-    // Upper floor windows
-    drawWindow(ctx, 16, 16, true);
-    drawWindow(ctx, 48, 16, false);
-    drawWindow(ctx, 80, 16, true);
+    
+    // Roof Parapet and Water Tank
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(0, 0, 128, 8); // roof edge
+    ctx.fillStyle = '#0f172a'; // black water tank
+    ctx.fillRect(16, 0, 20, 16);
+    ctx.fillStyle = '#1e293b'; 
+    ctx.fillRect(18, 2, 16, 14);
+    ctx.fillStyle = '#f8fafc'; // Sintex logo squiggle
+    ctx.fillRect(22, 6, 8, 2);
+    // Satellite dish
+    ctx.fillStyle = '#cbd5e1';
+    ctx.beginPath(); ctx.arc(100, 8, 8, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(99, 4, 2, 8);
 
-    // Shop front ground floor
+    // Upper floor windows (Second Floor)
+    drawWindow(ctx, 16, 20, Math.random() > 0.5);
+    drawWindow(ctx, 56, 20, Math.random() > 0.5);
+    drawWindow(ctx, 96, 20, Math.random() > 0.5);
+    
+    // Middle floor windows with balcony
+    ctx.fillStyle = '#334155'; // balcony base
+    ctx.fillRect(12, 66, 104, 6);
+    drawWindow(ctx, 16, 50, Math.random() > 0.5);
+    drawWindow(ctx, 56, 50, Math.random() > 0.5);
+    drawWindow(ctx, 96, 50, Math.random() > 0.5);
+    // Balcony railing
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(12, 60, 104, 2);
+    for(let i=12; i<116; i+=8) ctx.fillRect(i, 60, 2, 6);
+    
+    // Hanging clothes
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(20, 60, 8, 8);
+    ctx.fillStyle = '#3b82f6'; ctx.fillRect(32, 60, 10, 10);
+    ctx.fillStyle = '#facc15'; ctx.fillRect(80, 60, 6, 8);
+
+    // Wires and AC pipes
+    ctx.fillStyle = '#020617';
+    ctx.beginPath(); ctx.moveTo(0, 40); ctx.quadraticCurveTo(64, 50, 128, 40); ctx.stroke();
+    
+    // Ground Floor Shop
     ctx.fillStyle = '#0f172a'; // dark interior
-    ctx.fillRect(10, 70, 108, 58);
+    ctx.fillRect(10, 96, 108, 32);
     // Shop counter / goods
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillRect(16, 90, 40, 20);
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(20, 80, 10, 10);
-    ctx.fillStyle = '#3b82f6';
-    ctx.fillRect(35, 80, 10, 10);
+    ctx.fillStyle = '#fbbf24'; ctx.fillRect(16, 110, 40, 18);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(20, 100, 10, 10); // boxes
+    ctx.fillStyle = '#3b82f6'; ctx.fillRect(35, 104, 10, 6);
+    ctx.fillStyle = '#10b981'; ctx.fillRect(80, 100, 16, 28); // fridge
+    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(82, 102, 12, 14); // glass
+    
     // Shop sign
     ctx.fillStyle = '#1d4ed8'; // blue sign
-    ctx.fillRect(10, 56, 108, 14);
-    ctx.fillStyle = '#ffffff'; // marathi/english text squiggle
-    ctx.fillRect(14, 60, 40, 6);
-    ctx.fillRect(60, 60, 40, 6);
-    // Awning (Orange/White striped)
-    for (let i = 0; i < 112; i += 8) {
-      ctx.fillStyle = (i % 16 === 0) ? '#f97316' : '#f8fafc';
-      ctx.fillRect(8 + i, 70, 8, 12);
-    }
+    ctx.fillRect(8, 82, 112, 14);
+    ctx.fillStyle = '#ffffff'; // text squiggle
+    ctx.fillRect(14, 86, 40, 6);
+    ctx.fillRect(60, 86, 40, 6);
+    
+    // Postered wall
+    ctx.fillStyle = '#f8fafc'; ctx.fillRect(118, 96, 10, 14);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(120, 98, 6, 4);
   });
 
   createPixelCanvas('building-res', 128, 128, (ctx) => {
     // Plaster wall
     ctx.fillStyle = '#cbd5e1';
     ctx.fillRect(0, 0, 128, 128);
+    // Peeling plaster / moss at bottom
     ctx.fillStyle = '#94a3b8'; // weathering
     ctx.fillRect(0, 0, 10, 128);
     ctx.fillRect(118, 0, 10, 128);
+    ctx.fillStyle = '#4d7c0f'; // mossy bottom
     ctx.fillRect(0, 118, 128, 10);
+    for(let i=0; i<40; i++) ctx.fillRect(Math.random()*128, 100+Math.random()*28, Math.random()*8, Math.random()*8);
+
+    // Roof details
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(0, 0, 128, 6);
+    ctx.fillStyle = '#3b82f6'; // blue tarp
+    ctx.fillRect(40, 0, 30, 12);
     
-    // 3x2 Window grid
+    // 3 floors of windows
     for(let r = 0; r < 3; r++) {
       for(let c = 0; c < 3; c++) {
-        drawWindow(ctx, 16 + c * 36, 16 + r * 36, Math.random() > 0.3);
+        drawWindow(ctx, 20 + c * 36, 12 + r * 36, Math.random() > 0.4);
+        
+        // Random AC units or potted plants per window
+        if(Math.random() > 0.7) {
+          ctx.fillStyle = '#84cc16'; // plant
+          ctx.fillRect(20 + c * 36, 28 + r * 36, 6, 4);
+          ctx.fillStyle = '#78350f'; // pot
+          ctx.fillRect(20 + c * 36, 32 + r * 36, 6, 4);
+        }
       }
     }
-    // Pipes & wires
+
+    // Huge tangled wire mess across the building
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 1;
+    for(let i=0; i<5; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 30 + i * 15);
+      ctx.quadraticCurveTo(64, 40 + i * 20, 128, 20 + i * 10);
+      ctx.stroke();
+    }
+
+    // Main Pipe
     ctx.fillStyle = '#334155';
-    ctx.fillRect(112, 0, 4, 128); // main pipe
-    ctx.fillRect(108, 40, 8, 4); // junction
+    ctx.fillRect(110, 0, 6, 128); // thick main pipe
+    // Pipe brackets
+    ctx.fillStyle = '#0f172a';
+    for(let i=10; i<128; i+=20) ctx.fillRect(108, i, 10, 2);
+    
+    // Entrance / Ground door
+    ctx.fillStyle = '#78350f'; // wooden door
+    ctx.fillRect(54, 96, 20, 32);
+    ctx.fillStyle = '#facc15'; // door handle
+    ctx.fillRect(70, 112, 2, 4);
+    // Electrical box
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(20, 100, 12, 16);
+    ctx.fillStyle = '#ef4444'; // danger sign
+    ctx.fillRect(24, 104, 4, 4);
   });
 
   // 4. ROADS, SIDEWALKS & WATER

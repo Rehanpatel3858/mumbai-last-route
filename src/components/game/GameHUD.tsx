@@ -120,8 +120,8 @@ export const GameHUD: React.FC<GameHUDProps> = ({
         </div>
       </div>
 
-      {/* Bottom Right Small Controls Overlay */}
-      <div style={{ position: 'absolute', bottom: '1rem', right: '1rem', display: 'flex', gap: '1rem', padding: '0.5rem 1rem', backgroundColor: 'rgba(29, 45, 68, 0.9)', border: '2px solid var(--panel-border)', borderRadius: '4px', zIndex: 40, pointerEvents: 'none' }}>
+      {/* Bottom Right Small Controls Overlay (Desktop) */}
+      <div className="desktop-controls" style={{ position: 'absolute', bottom: '1rem', right: '1rem', display: 'flex', gap: '1rem', padding: '0.5rem 1rem', backgroundColor: 'rgba(29, 45, 68, 0.9)', border: '2px solid var(--panel-border)', borderRadius: '4px', zIndex: 40, pointerEvents: 'none' }}>
         <div className="text-muted" style={{ fontSize: '0.7rem', fontFamily: 'monospace' }}>
           <span className="text-white">WASD</span> MOVE
         </div>
@@ -133,6 +133,33 @@ export const GameHUD: React.FC<GameHUDProps> = ({
         </div>
         <div className="text-muted" style={{ fontSize: '0.7rem', fontFamily: 'monospace' }}>
           <span className="text-white">ESC</span> PAUSE
+        </div>
+      </div>
+
+      {/* Bottom Right Mobile Controls */}
+      <div className="mobile-controls" style={{ position: 'absolute', bottom: '2rem', right: '2rem', zIndex: 50 }}>
+        <button 
+          className="game-button game-button-primary" 
+          style={{ padding: '1.2rem', fontSize: '1.2rem', borderRadius: '50%', width: '80px', height: '80px', alignSelf: 'flex-end', marginBottom: '1rem', border: '3px solid var(--accent-cyan)' }}
+          onClick={() => window.dispatchEvent(new Event('mobile-action-rescue'))}
+        >
+          RESCUE
+        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            className="game-button game-button-secondary" 
+            style={{ padding: '1rem', fontSize: '1rem', borderRadius: '12px', flex: 1 }}
+            onClick={() => window.dispatchEvent(new Event('mobile-action-map'))}
+          >
+            MAP
+          </button>
+          <button 
+            className="game-button game-button-secondary" 
+            style={{ padding: '1rem', fontSize: '1rem', borderRadius: '12px', flex: 1 }}
+            onClick={() => window.dispatchEvent(new Event('mobile-action-pause'))}
+          >
+            PAUSE
+          </button>
         </div>
       </div>
 
